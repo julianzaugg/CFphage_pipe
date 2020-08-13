@@ -1,0 +1,6 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - racon=1.4.13
+  - minimap2=2_2.17
