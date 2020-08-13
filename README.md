@@ -1,0 +1,1 @@
+Snakemake pipeline to process Cystic Fibrosis isolates for phage discovery and evaluation
