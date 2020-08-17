@@ -1,8 +1,16 @@
-long_reads:
-    none
-short_reads_1:
-    none
-short_reads_2:
-    none
-max_threads:
+sample_sheet:
+    test_data/sample_sheet.tsv
+LONG_READ_DIR:
+    test_data/long_reads
+SHORT_READ_DIR:
+    test_data/short_reads
+MAX_THREADS:
     8
+GENOME_SIZE:
+    6000000
+FLYE_PARAMS:
+    ""
+GTDBTK_REF_DIR:
+    /srv/db/gtdbtk/official/release95
+BUSCO_REF_DIR:
+    /srv/longreads/nanopore/busco
