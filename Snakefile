@@ -97,9 +97,10 @@ rule nanoplot_filtered:
         "NanoPlot -o data/nanoplot_filtered/{wildcards.sample} --fastq {input.reads} && " \
         "touch {output}"
 
+
 rule flye_all:
     input:
-         expand("data/nanofilt/{sample}_nanofilt.fastq.gz", sample = SAMPLES)
+         expand("data/flye/{sample}/{sample}.flye.fasta", sample = SAMPLES)
 
 rule flye:
     input:
@@ -116,5 +117,5 @@ rule flye:
     shell:
          "mkdir -p data/flye/{wildcards.sample} &&" \
          "flye --nano-raw {input.reads} -o data/flye/{wildcards.sample} " \
-         "-g {genome_size} -t {threads} {params.flye_parameters} && " \
+         "-g {params.genome_size} -t {threads} {params.flye_parameters} && " \
          "cp data/flye/{wildcards.sample}/assembly.fasta data/flye/{wildcards.sample}/wildcards.sample.flye.fasta"
