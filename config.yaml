@@ -9,7 +9,7 @@ GENOME_SIZE:
 FLYE_PARAMS:
     ""
 GUPPY_MODEL:
-    "r941_min_high_g360"
+    r941_min_high_g360
 GTDBTK_REF_DIR:
     /srv/db/gtdbtk/official/release95
 BUSCO_REF_DIR:
