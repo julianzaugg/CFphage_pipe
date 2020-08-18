@@ -142,11 +142,13 @@ rule flye:
     threads:
         config["MAX_THREADS"]
     shell:
-         "mkdir -p data/assembly/{wildcards.sample}/flye && " \
-         "flye --nano-raw {input.reads} -o data/{wildcards.sample}/flye " \
-         "-g {params.genome_size} -t {threads} {params.flye_parameters} && " \
-         "cp data/assembly/{wildcards.sample}/flye/assembly.fasta " \
-         "data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.fasta"
+         """
+         mkdir -p data/assembly/{wildcards.sample}/flye
+         flye --nano-raw {input.reads} -o data/{wildcards.sample}/flye \
+         -g {params.genome_size} -t {threads} {params.flye_parameters}
+         cp data/assembly/{wildcards.sample}/flye/assembly.fasta \
+         data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.fasta
+         """
 
 rule canu:
     input:
@@ -166,13 +168,15 @@ rule canu:
     threads:
         config["MAX_THREADS"]
     shell:
-        "mkdir -p data/assembly/{wildcards.sample}/canu && " \
-        "canu -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ " \
-        "-nanopore {input.reads} genomeSize={params.genome_size} -minReadLength={params.min_read_length} " \
-        "-minOverlapLength={params.min_overlap_length} -minInputCoverage {params.min_input_coverage} " \
-        "-stopOnLowCoverage={params.stop_on_low_coverage} -maxMemory={params.max_memory} -maxThreads={threads} && "
-        "cp data/assembly/{wildcards.sample}/canu/assembly.fasta " \
-        "data/assembly/{wildcards.sample}/canu/{wildcards.sample}.canu.fasta"
+        """
+        mkdir -p data/assembly/{wildcards.sample}/canu
+        canu -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ \
+        -nanopore {input.reads} genomeSize={params.genome_size} -minReadLength={params.min_read_length} \
+        -minOverlapLength={params.min_overlap_length} -minInputCoverage {params.min_input_coverage} \
+        -stopOnLowCoverage={params.stop_on_low_coverage} -maxMemory={params.max_memory} -maxThreads={threads}
+        cp data/assembly/{wildcards.sample}/canu/assembly.fasta \
+        data/assembly/{wildcards.sample}/canu/{wildcards.sample}.canu.fasta
+        """
 
 # ------------------------------------------------------------------------------------------------
 # Polishing of assemblies
