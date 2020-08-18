@@ -1,16 +1,20 @@
-sample_sheet:
-    test_data/sample_sheet.tsv
 LONG_READ_DIR:
-    test_data/long_reads
+    none
 SHORT_READ_DIR:
-    test_data/short_reads
-MAX_THREADS:
-    8
+    none
+ASSEMBLERS:
+    flye,canu
 GENOME_SIZE:
     6000000
 FLYE_PARAMS:
     ""
+GUPPY_MODEL:
+    "r941_min_high_g360"
 GTDBTK_REF_DIR:
     /srv/db/gtdbtk/official/release95
 BUSCO_REF_DIR:
     /srv/longreads/nanopore/busco
+MAX_THREADS:
+    8
+MAX_MEMORY:
+    100
