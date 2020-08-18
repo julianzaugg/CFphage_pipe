@@ -1,5 +1,5 @@
 LONG_READ_DIR:
-    test_data/long_reads
+    none
 SHORT_READ_DIR:
     none
 ASSEMBLERS:
