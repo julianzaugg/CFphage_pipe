@@ -20,9 +20,7 @@ for round in range(snakemake.params.rounds):
         subprocess.Popen("minimap2 -t {} -x map-ont {} {} -o {}/{}.pol.{}.paf".format(snakemake.threads,
                                                                         snakemake.input.assembly,
                                                                         snakemake.input.reads,
-                                                                        out,
-                                                                        snakemake.wildcards.sample,
-                                                                                  round),
+                                                                        out, snakemake.wildcards.sample,round),
                          shell=True).wait()
         # Polish
         subprocess.Popen("racon -m 8 -x -6 -g -8 -w 500 -t {} {} {}/{}.pol.{}.paf {} > {}/{}.pol.{}.fasta".format(
@@ -49,6 +47,6 @@ for round in range(snakemake.params.rounds):
             out,snakemake.wildcards.sample,prev_round,
             out, snakemake.wildcards.sample, round
         ), shell=True).wait()
-    reference = "{}/{}.pol.{}.fasta".format(out, snakemake.wildcards.sample, round)
+    reference =  os.path.join(out, "{}/{}.pol.{}.fasta".format(out, snakemake.wildcards.sample, round))
 shutil.copy2(reference, snakemake.output)
 
