@@ -168,12 +168,13 @@ rule canu:
     threads:
         config["MAX_THREADS"]
     shell:
+        # -minReadLength={params.min_read_length} \
+        # -minOverlapLength={params.min_overlap_length} -minInputCoverage {params.min_input_coverage} \
+        # -stopOnLowCoverage={params.stop_on_low_coverage}
         """
         mkdir -p data/assembly/{wildcards.sample}/canu
         canu -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ \
-        -nanopore {input.reads} genomeSize={params.genome_size} -minReadLength={params.min_read_length} \
-        -minOverlapLength={params.min_overlap_length} -minInputCoverage {params.min_input_coverage} \
-        -stopOnLowCoverage={params.stop_on_low_coverage} -maxMemory={params.max_memory} -maxThreads={threads}
+        -nanopore {input.reads} genomeSize={params.genome_size} -maxMemory={params.max_memory} -maxThreads={threads}
         cp data/assembly/{wildcards.sample}/canu/assembly.fasta \
         data/assembly/{wildcards.sample}/canu/{wildcards.sample}.canu.fasta
         """
