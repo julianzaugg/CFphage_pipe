@@ -81,8 +81,10 @@ rule nanoplot_raw:
     conda:
          "envs/nanoplot.yaml"
     shell:
-        "mkdir -p data/nanoplot_raw/{wildcards.sample} && " \
-        "NanoPlot -o data/nanoplot_raw/{wildcards.sample} --fastq {input.reads}"
+        """
+        mkdir -p data/nanoplot_raw/{wildcards.sample}
+        NanoPlot -o data/nanoplot_raw/{wildcards.sample} --fastq {input.reads}
+        """
 
 # rule nanofilt_all:
     # input:
@@ -95,9 +97,18 @@ rule nanofilt:
         "data/nanofilt/{sample}_nanofilt.fastq.gz"
     conda:
          "envs/nanofilt.yaml"
+    params:
+        length = 200,
+        headcrop = 25,
+        quality = 7,
+        readtype = "1D"
     shell:
-        "gunzip -c {input.reads} | NanoFilt --length 200 --headcrop 25 --quality 7 --readtype 1D | " \
-        "gzip > data/nanofilt/{wildcards.sample}_nanofilt.fastq.gz"
+        """
+        gunzip -c {input.reads} | NanoFilt --length {params.length} --headcrop {params.headcrop} \
+        --quality {params.quality} --readtype {params.readtype} | 
+        gzip > data/nanofilt/{wildcards.sample}_nanofilt.fastq.gz
+        """
+
 
 # rule nanoplot_filtered_all:
 #     input:
@@ -111,8 +122,10 @@ rule nanoplot_filtered:
     conda:
          "envs/nanoplot.yaml"
     shell:
-        "mkdir -p data/nanoplot_filtered/{wildcards.sample} && " \
-        "NanoPlot -o data/nanoplot_filtered/{wildcards.sample} --fastq {input.reads}"
+        """
+        mkdir -p data/nanoplot_filtered/{wildcards.sample}
+        NanoPlot -o data/nanoplot_filtered/{wildcards.sample} --fastq {input.reads}
+        """
 
 # ------------------------------------------------------------------------------------------------
 # Assembly
@@ -144,7 +157,7 @@ rule flye:
     shell:
          """
          mkdir -p data/assembly/{wildcards.sample}/flye
-         flye --nano-raw {input.reads} -o data/{wildcards.sample}/flye \
+         flye --nano-raw {input.reads} -o data/assembly/{wildcards.sample}/flye \
          -g {params.genome_size} -t {threads} {params.flye_parameters}
          cp data/assembly/{wildcards.sample}/flye/assembly.fasta \
          data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.fasta
@@ -227,10 +240,22 @@ rule medaka_polish:
     params:
         guppy_model = config["GUPPY_MODEL"]
     shell:
-        "medaka_consensus -d {input.assembly} -i {input.reads} -t {threads} "
-        "-o data/polishing/{wildcards.sample}/medaka -m {params.guppy_model} && " \
-        "cp data/polishing/{wildcards.sample}/medaka/consensus.fasta " \
-        "data/polishing/{wildcards.sample}/medaka/{wildcards.sample}.medaka.fasta"
+        """
+        medaka_consensus -d {input.assembly} -i {input.reads} -t {threads} \
+        -o data/polishing/{wildcards.sample}/medaka -m {params.guppy_model}
+        cp data/polishing/{wildcards.sample}/medaka/consensus.fasta \
+        data/polishing/{wildcards.sample}/medaka/{wildcards.sample}.medaka.fasta
+        """
 
 
 # ------------------------------------------------------------------------------------------------
+# TODO
+#          additional assemblers
+#          checkm, gtdbtk, busco?
+#          coverm/to_{reference}
+#          coverm/to_assembly
+#          kaiju (profile reads)
+#          read stats
+#          virsorter2, vibrant, checkv (separate snakemake?)
+#
+
