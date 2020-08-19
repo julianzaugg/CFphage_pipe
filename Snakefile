@@ -192,6 +192,9 @@ rule canu:
         data/assembly/{wildcards.sample}/canu/{wildcards.sample}.canu.fasta
         """
 
+# rule raven:
+# rule miniasm
+# rule wtdbg2
 # ------------------------------------------------------------------------------------------------
 # Polishing of assemblies
 
