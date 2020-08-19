@@ -30,7 +30,7 @@ for round in range(snakemake.params.rounds):
             snakemake.input.reads,
             out,snakemake.wildcards.sample,round,
             snakemake.input.assembly,
-            out, snakemake.wildcards.sample, round + 1
+            out, snakemake.wildcards.sample, round
         ), shell=True).wait()
     else:
         prev_round = round - 1
@@ -45,7 +45,7 @@ for round in range(snakemake.params.rounds):
                          "{}/{}.pol.{}.fasta".format(
             snakemake.threads,
             snakemake.input.reads,
-            out,snakemake.wildcards.sample,prev_round,
+            out,snakemake.wildcards.sample,round,
             out,snakemake.wildcards.sample,prev_round,
             out, snakemake.wildcards.sample, round
         ), shell=True).wait()
