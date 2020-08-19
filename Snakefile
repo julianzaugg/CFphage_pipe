@@ -97,7 +97,7 @@ rule nanofilt:
          "envs/nanofilt.yaml"
     shell:
         "gunzip -c {input.reads} | NanoFilt --length 200 --headcrop 25 --quality 7 --readtype 1D | " \
-        "gzip > data/{wildcards.sample}_nanofilt.fastq.gz"
+        "gzip > data/nanofilt/{wildcards.sample}_nanofilt.fastq.gz"
 
 # rule nanoplot_filtered_all:
 #     input:
