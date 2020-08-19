@@ -54,5 +54,6 @@ for round in range(snakemake.params.rounds):
 print(reference)
 print(snakemake.output)
 print(repr(snakemake.output))
-shutil.copy2(reference, snakemake.output)
+print(snakemake.output[0])
+shutil.copy2(reference, snakemake.output[0])
 
