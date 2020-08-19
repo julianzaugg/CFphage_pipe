@@ -2,9 +2,6 @@ import sys
 import os
 import subprocess
 import shutil
-import snakemake
-
-
 
 if not os.path.exists(snakemake.input.reads):
     sys.exit("No read file found")
