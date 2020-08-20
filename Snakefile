@@ -305,4 +305,4 @@ rule medaka_polish:
 #          compile read stats
 #          virsorter2, vibrant, checkv (separate snakemake?)
 #          plasmid identification (PlasFlow/gplas or PlasClass)
-
+#          log failed assemblys
