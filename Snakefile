@@ -137,6 +137,8 @@ rule flye:
         flye_parameters = config["FLYE_PARAMS"]
     threads:
         config["MAX_THREADS"]
+    message:
+        "Assembling {wildcards.sample} with flye"
     shell:
          """
          mkdir -p data/assembly/{wildcards.sample}/flye
@@ -162,6 +164,8 @@ rule canu:
          "envs/canu.yaml"
     threads:
         config["MAX_THREADS"]
+    message:
+        "Assembling {wildcards.sample} with canu"
     shell:
         """
         mkdir -p data/assembly/{wildcards.sample}/canu
@@ -184,6 +188,8 @@ rule raven:
         polishing_rounds = config["RACON_ROUNDS"]
     threads:
         config["MAX_THREADS"]
+    message:
+        "Assembling {wildcards.sample} with raven"
     shell:
         """
         mkdir -p data/assembly/{wildcards.sample}/raven
@@ -201,6 +207,8 @@ rule wtdbg2: # also known as redbean
         genome_size = config["GENOME_SIZE"]
     threads:
         config["MAX_THREADS"]
+    message:
+        "Assembling {wildcards.sample} with wtdbg2"
     shell:
         """
         mkdir -p data/assembly/{wildcards.sample}/wtdbg2
@@ -221,6 +229,8 @@ rule miniasm:
         genome_size = config["GENOME_SIZE"]
     threads:
         config["MAX_THREADS"]
+    message:
+        "Assembling {wildcards.sample} with miniasm"
     shell:
         """
         mkdir -p data/assembly/{wildcards.sample}/miniasm
@@ -288,12 +298,11 @@ rule medaka_polish:
 
 # ------------------------------------------------------------------------------------------------
 # TODO
-#          additional assemblers
 #          checkm, gtdbtk, busco?
 #          coverm/to_{reference}
 #          coverm/to_assembly
 #          kaiju (profile reads)
 #          compile read stats
 #          virsorter2, vibrant, checkv (separate snakemake?)
-#
+#          plasmid identification (PlasFlow/gplas or PlasClass)
 
