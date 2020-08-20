@@ -3,11 +3,13 @@ LONG_READ_DIR:
 SHORT_READ_DIR:
     none
 ASSEMBLERS:
-    flye,canu
+    flye
 GENOME_SIZE:
     6000000
 FLYE_PARAMS:
     ""
+RACON_ROUNDS:
+    4
 GUPPY_MODEL:
     r941_min_high_g360
 GTDBTK_REF_DIR:
@@ -18,3 +20,5 @@ MAX_THREADS:
     8
 MAX_MEMORY:
     100
+REFERENCE_GENOMES:
+    none

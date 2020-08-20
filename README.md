@@ -9,6 +9,15 @@ conda activate cfphage_pipe
 ```
 
 ### Usage
+For QC
 ```shell script
-snakemake --use-conda --latency-wait 20 --cores 30 polishing --configfile config.yaml 
+snakemake --use-conda --latency-wait 10 --cores 30 qc --configfile config.yaml
+```
+For QC + assembly
+```shell script
+snakemake --use-conda --latency-wait 10 --cores 30 assemble --configfile config.yaml
+```
+For QC + assembly + polishing
+```shell script
+snakemake --use-conda --latency-wait 10 --cores 30 polish --configfile config.yaml 
 ```

@@ -29,6 +29,7 @@ onstart:
         # sys.exit("Provide sample_sheet")
     if long_reads_dir == "none":
         sys.exit("Need to specify long reads directory")
+
     valid_assemblers = ["flye", "canu", "miniasm","wtdbg2", "raven"]
     for assembler in ASSEMBLERS:
         if assembler not in valid_assemblers:
@@ -41,7 +42,6 @@ onstart:
 # Load sample_sheet
 # sample_df=pd.read_csv (config["sample_sheet"], comment="#", skip_blank_lines=True, sep="\t", index_col=0)
 
-
 # The list of samples to be processed
 # SAMPLES=list(sample_df.index)
 SAMPLES = glob.glob(f"{LONG_READ_DIR}**/*.fastq.gz",
@@ -51,13 +51,13 @@ SAMPLES = [sample.replace(f"{LONG_READ_DIR}/","").replace(".fastq.gz","")
            in SAMPLES]
 
 # ------------------------------------------------------------------------------------------------
-# Read quality control and evaluation
+# Perform read quality control and evaluation
+
 rule qc:
     input:
         expand("data/nanoplot_raw/{sample}/NanoStats.txt", sample = SAMPLES),
         expand("data/nanofilt/{sample}_nanofilt.fastq.gz", sample = SAMPLES),
         expand("data/nanoplot_filtered/{sample}/NanoStats.txt", sample = SAMPLES)
-        # report= "reports/QC_report.html",
     output:
         temp(touch("finished_QC"))
 
@@ -115,8 +115,9 @@ rule nanoplot_filtered:
         """
 
 # ------------------------------------------------------------------------------------------------
-# Assembly
-rule assembly:
+# Assemble reads
+
+rule assemble:
     input:
         expand("data/assembly/{sample}/{assembler}/{sample}.{assembler}.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS),
@@ -180,7 +181,7 @@ rule raven:
     conda:
          "envs/raven.yaml"
     params:
-        polishing_rounds = 0
+        polishing_rounds = config["RACON_ROUNDS"]
     threads:
         config["MAX_THREADS"]
     shell:
@@ -227,13 +228,13 @@ rule miniasm:
         data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz
         miniasm -f {input.reads} data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz > \
         data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa
-        awk '$1 ~/S/ {{print ">"\$2"\\n"\$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa > \
+        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa > \
         {output}
         """
 # ------------------------------------------------------------------------------------------------
-# Polishing of assemblies
+# Polish assemblies
 
-rule polishing:
+rule polish:
     input:
         expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS),
@@ -293,7 +294,7 @@ rule medaka_polish:
 #          coverm/to_{reference}
 #          coverm/to_assembly
 #          kaiju (profile reads)
-#          read stats
+#          compile read stats
 #          virsorter2, vibrant, checkv (separate snakemake?)
 #
 
