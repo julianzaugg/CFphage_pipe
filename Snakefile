@@ -224,12 +224,11 @@ rule miniasm:
     shell:
         """
         mkdir -p data/assembly/{wildcards.sample}/miniasm
-        minimap2 -t {threads} -x ava-ont {input.reads} {input.reads} > \
-        data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz
-        miniasm -f {input.reads} data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz > \
-        data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa
-        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa > \
-        {output}
+        minimap2 -t {threads} -x ava-ont {input.reads} {input.reads} \
+        > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz
+        miniasm -f {input.reads} data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz \
+        > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa
+        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa > {output}
         """
 # ------------------------------------------------------------------------------------------------
 # Polish assemblies
