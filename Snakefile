@@ -131,11 +131,11 @@ rule nanoplot_filtered:
 # Assembly
 rule assembly:
     input:
-        expand("data/assembly/{sample}/{assembler}/finished_assembly", sample = SAMPLES, assembler = ASSEMBLERS),
+        expand("data/assembly/{sample}/{assembler}/{sample}.{assembler}.fasta",
+               sample = SAMPLES, assembler = ASSEMBLERS),
         "finished_QC"
     output:
         temp(touch("finished_assembly"))
-
 
 # rule flye_all:
 #     input:
@@ -145,8 +145,7 @@ rule flye:
     input:
         reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
     output:
-        "data/assembly/{sample}/flye/{sample}.flye.fasta",
-        temp(touch("data/assembly/{sample}/flye/finished_assembly"))
+        "data/assembly/{sample}/flye/{sample}.flye.fasta"
     conda:
          "envs/flye.yaml"
     params:
@@ -167,12 +166,11 @@ rule canu:
     input:
         reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
     output:
-        "data/assembly/{sample}/canu/{sample}.canu.fasta",
-        temp(touch("data/assembly/{sample}/canu/finished_assembly"))
+        "data/assembly/{sample}/canu/{sample}.canu.fasta"
     params:
         genome_size = config["GENOME_SIZE"],
-        min_read_length=500,
-        min_overlap_length=200,
+        min_read_length=1000,
+        min_overlap_length=500.,
         min_input_coverage=0,
         stop_on_low_coverage=0,
         max_memory=config["MAX_MEMORY"]
@@ -181,20 +179,74 @@ rule canu:
     threads:
         config["MAX_THREADS"]
     shell:
-        # -minReadLength={params.min_read_length} \
-        # -minOverlapLength={params.min_overlap_length} -minInputCoverage {params.min_input_coverage} \
-        # -stopOnLowCoverage={params.stop_on_low_coverage}
         """
         mkdir -p data/assembly/{wildcards.sample}/canu
         canu -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ \
-        -nanopore {input.reads} genomeSize={params.genome_size} -maxMemory={params.max_memory} -maxThreads={threads}
+        -nanopore {input.reads} genomeSize={params.genome_size} -maxMemory={params.max_memory} -maxThreads={threads} \
+        -minReadLength={params.min_read_length} -minOverlapLength={params.min_overlap_length} \
+        -minInputCoverage {params.min_input_coverage} -stopOnLowCoverage={params.stop_on_low_coverage} -fast
         cp data/assembly/{wildcards.sample}/canu/assembly.fasta \
         data/assembly/{wildcards.sample}/canu/{wildcards.sample}.canu.fasta
         """
 
-# rule raven:
-# rule miniasm
-# rule wtdbg2
+rule raven:
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
+    output:
+        "data/assembly/{sample}/raven/{sample}.raven.fasta"
+    conda:
+         "envs/raven.yaml"
+    params:
+        polishing_rounds = 0
+    threads:
+        config["MAX_THREADS"]
+    shell:
+        """
+        mkdir -p data/assembly/{wildcards.sample}/raven
+        raven --polishing-rounds {params.polishing_rounds} --threads {threads} {input.reads} > {output}
+        """
+
+rule wtdbg2: # also known as redbean
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
+    output:
+        "data/assembly/{sample}/wtdbg2/{sample}.wtdbg2.fasta"
+    conda:
+         "envs/wtdbg2.yaml"
+    params:
+        genome_size = config["GENOME_SIZE"]
+    threads:
+        config["MAX_THREADS"]
+    shell:
+        """
+        mkdir -p data/assembly/{wildcards.sample}/wtdbg2
+        wtdbg2 -x ont -g {params.genome_size} -t {threads} -i {input.reads} -f \
+        -o data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2
+        wtpoa-cns -t {threads} \
+        -i data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2.ctg.lay.gz -fo {output}
+        """
+
+rule miniasm:
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
+    output:
+        "data/assembly/{sample}/miniasm/{sample}.miniasm.fasta"
+    conda:
+         "envs/miniasm.yaml"
+    params:
+        genome_size = config["GENOME_SIZE"]
+    threads:
+        config["MAX_THREADS"]
+    shell:
+        """
+        mkdir -p data/assembly/{wildcards.sample}/miniasm
+        minimap2 -t {threads} -x ava-ont {input.reads} {input.reads} > \
+        data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz
+        miniasm -f {input.reads} data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz > \
+        data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa
+        awk '$1 ~/S/ {{print ">"\$2"\\n"\$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa > \
+        {output}
+        """
 # ------------------------------------------------------------------------------------------------
 # Polishing of assemblies
 
@@ -224,7 +276,11 @@ rule racon_polish:
     message:
         "Polishing {input.assembly} with Racon"
     params:
-        rounds = 3
+        rounds = 4,
+        match = 8,
+        mismatch = -6,
+        gap = -8,
+        window_length = 500
     script:
         "scripts/racon_polish.py"
 
@@ -249,7 +305,6 @@ rule medaka_polish:
         cp data/polishing/{wildcards.sample}/medaka/consensus.fasta \
         data/polishing/{wildcards.sample}/medaka/{wildcards.sample}.medaka.fasta
         """
-
 
 # ------------------------------------------------------------------------------------------------
 # TODO

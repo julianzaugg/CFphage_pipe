@@ -24,7 +24,11 @@ for round in range(snakemake.params.rounds):
                                                                             out, snakemake.wildcards.sample,round),
                              shell=True).wait()
             # Polish
-            subprocess.Popen("racon -m 8 -x -6 -g -8 -w 500 -t {} {} {}/{}.pol.{}.paf {} > {}/{}.pol.{}.fasta".format(
+            subprocess.Popen("racon -m {} -x {} -g {} -w {} -t {} {} {}/{}.pol.{}.paf {} > {}/{}.pol.{}.fasta".format(
+                snakemake.params.match,
+                snakemake.params.mismatch,
+                snakemake.params.gap,
+                snakemake.params.window_length,
                 snakemake.threads,
                 snakemake.input.reads,
                 out,snakemake.wildcards.sample,round,
@@ -42,8 +46,12 @@ for round in range(snakemake.params.rounds):
                                                                             out,snakemake.wildcards.sample,round),
                              shell=True).wait()
             # Polish the assembly from the previous round
-            subprocess.Popen("racon -m 8 -x -6 -g -8 -w 500 -t {} {} {}/{}.pol.{}.paf {}/{}.pol.{}.fasta > " \
+            subprocess.Popen("racon -m {} -x {} -g {} -w {} -t {} {} {}/{}.pol.{}.paf {}/{}.pol.{}.fasta > " \
                              "{}/{}.pol.{}.fasta".format(
+                snakemake.params.match,
+                snakemake.params.mismatch,
+                snakemake.params.gap,
+                snakemake.params.window_length,
                 snakemake.threads,
                 snakemake.input.reads,
                 out,snakemake.wildcards.sample,round,
@@ -51,9 +59,5 @@ for round in range(snakemake.params.rounds):
                 out, snakemake.wildcards.sample, round
             ), shell=True).wait()
     reference = "{}/{}.pol.{}.fasta".format(out, snakemake.wildcards.sample, round)
-print(reference)
-print(snakemake.output)
-print(repr(snakemake.output))
-print(snakemake.output[0])
 shutil.copy2(reference, snakemake.output[0])
 
