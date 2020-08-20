@@ -69,10 +69,6 @@ rule qc:
 #     conda:
 #         "envs/pycoqc.yaml"
 
-# rule nanoplot_raw_all:
-    # input:
-         # expand("data/nanoplot_raw/{sample}/NanoStats.txt", sample = SAMPLES)
-
 rule nanoplot_raw:
     input:
          reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz"
@@ -85,10 +81,6 @@ rule nanoplot_raw:
         mkdir -p data/nanoplot_raw/{wildcards.sample}
         NanoPlot -o data/nanoplot_raw/{wildcards.sample} --fastq {input.reads}
         """
-
-# rule nanofilt_all:
-    # input:
-    #      expand("data/nanofilt/{sample}_nanofilt.fastq.gz", sample = SAMPLES)
 
 rule nanofilt:
     input:
@@ -108,11 +100,6 @@ rule nanofilt:
         --quality {params.quality} --readtype {params.readtype} | 
         gzip > data/nanofilt/{wildcards.sample}_nanofilt.fastq.gz
         """
-
-
-# rule nanoplot_filtered_all:
-#     input:
-#          expand("data/nanoplot_filtered/{sample}/NanoStats.txt", sample = SAMPLES)
 
 rule nanoplot_filtered:
     input:
@@ -136,10 +123,6 @@ rule assembly:
         "finished_QC"
     output:
         temp(touch("finished_assembly"))
-
-# rule flye_all:
-#     input:
-#          expand("data/assembly/{sample}/flye/{sample}.flye.fasta", sample = SAMPLES)
 
 rule flye:
     input:
@@ -170,7 +153,7 @@ rule canu:
     params:
         genome_size = config["GENOME_SIZE"],
         min_read_length=1000,
-        min_overlap_length=500.,
+        min_overlap_length=500,
         min_input_coverage=0,
         stop_on_low_coverage=0,
         max_memory=config["MAX_MEMORY"]
@@ -252,23 +235,18 @@ rule miniasm:
 
 rule polishing:
     input:
-        expand("data/polishing/{sample}/medaka/{sample}.{assembler}.medaka.fasta",
+        expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS),
         "finished_assembly"
     output:
         temp(touch("finished_polishing"))
-
-# rule polish_racon_all:
-#     input:
-#          expand("data/polishing/racon/{sample}/{sample}.{assembler}.racon.fasta",
-#                 sample = SAMPLES)
 
 rule racon_polish:
     input:
          reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz",
          assembly = "data/assembly/{sample}/{assembler}/{sample}.{assembler}.fasta"
     output:
-          "data/polishing/{sample}/racon/{sample}.{assembler}.racon.fasta"
+          "data/polishing/{sample}/racon/{assembler}/{sample}.{assembler}.racon.fasta"
     conda:
          "envs/racon.yaml"
     threads:
@@ -287,9 +265,9 @@ rule racon_polish:
 rule medaka_polish:
     input:
          reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz",
-         assembly = "data/polishing/{sample}/racon/{sample}.{assembler}.racon.fasta"
+         assembly = "data/polishing/{sample}/racon/{assembler}/{sample}.{assembler}.racon.fasta"
     output:
-          "data/polishing/{sample}/medaka/{sample}.{assembler}.medaka.fasta"
+          "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
     conda:
          "envs/medaka.yaml"
     threads:
@@ -300,10 +278,12 @@ rule medaka_polish:
         guppy_model = config["GUPPY_MODEL"]
     shell:
         """
+        mkdir -p data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}
         medaka_consensus -d {input.assembly} -i {input.reads} -t {threads} \
-        -o data/polishing/{wildcards.sample}/medaka -m {params.guppy_model}
-        cp data/polishing/{wildcards.sample}/medaka/consensus.fasta \
-        data/polishing/{wildcards.sample}/medaka/{wildcards.sample}.medaka.fasta
+        -o data/polishing/{wildcards.sample}/medaka/{wildcards.assembler} -m {params.guppy_model}
+        
+        cp data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta \
+        data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/{wildcards.sample}.{wildcards.assembler}.medaka.fasta
         """
 
 # ------------------------------------------------------------------------------------------------
