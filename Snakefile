@@ -16,6 +16,7 @@ SHORT_READ_DIR = config["SHORT_READ_DIR"]
 # Get list of specified assemblers
 ASSEMBLERS = config["ASSEMBLERS"].strip().split(",")
 
+
 onsuccess:
     print("Workflow finished, no error")
 
@@ -49,6 +50,13 @@ SAMPLES = glob.glob(f"{LONG_READ_DIR}**/*.fastq.gz",
 SAMPLES = [sample.replace(f"{LONG_READ_DIR}/","").replace(".fastq.gz","")
            for sample
            in SAMPLES]
+
+# List of reference genome files
+REFERENCE_GENOMES = glob.glob(f"{config['REFERENCE_GENOMES_DIR']}**/*.fasta",
+                    recursive=True)
+REFERENCE_GENOMES = [reference_genome.replace(f"{config['REFERENCE_GENOMES_DIR']}/","").replace(".fasta","")
+           for reference_genome
+           in REFERENCE_GENOMES]
 
 # ------------------------------------------------------------------------------------------------
 # Perform read quality control and evaluation
@@ -171,12 +179,12 @@ rule canu:
     shell:
         """
         mkdir -p data/assembly/{wildcards.sample}/canu
-        canu -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ \
+        canu -fast -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ \
         -nanopore {input.reads} genomeSize={params.genome_size} -maxMemory={params.max_memory} -maxThreads={threads} \
         -corThreads={threads} -useGrid={params.use_grid} -correctedErrorRate={params.corrected_error_rate} \
         -minReadLength={params.min_read_length} -minOverlapLength={params.min_overlap_length} \
-        -minInputCoverage={params.min_input_coverage} -stopOnLowCoverage={params.stop_on_low_coverage} -fast
-        cp data/assembly/{wildcards.sample}/canu/assembly.fasta \
+        -minInputCoverage={params.min_input_coverage} -stopOnLowCoverage={params.stop_on_low_coverage}
+        cp data/assembly/{wildcards.sample}/canu/{wildcards.sample}.contigs.fasta \
         data/assembly/{wildcards.sample}/canu/{wildcards.sample}.canu.fasta
         """
 
@@ -304,12 +312,54 @@ rule medaka_polish:
 #   - Of provided reference genomes
 #   - Of assemblies
 
+rule coverage_reference_genomes_all:
+    input:
+        expand("data/coverage/{reference_genome}/{reference_genome}_coverage_table.cov",
+               reference_genome = REFERENCE_GENOMES)
 
-# For all samples map to all reference genomes
-# rule coverage_references:
-    # input:
-        # expand("data/coverage/references_coverage",
-               # sample = SAMPLES, assembler = ASSEMBLERS)
+
+def get_coverm_reference_params(wildcards):
+    if wildcards in config["REFERENCE_GENOMES_PARAMS"]["COVERM_PARAMS"]:
+        return(config["REFERENCE_GENOMES_PARAMS"]["COVERM_PARAMS"][wildcards])
+    return(
+        {
+            "min_read_percent_identity" : 0.9,
+            "min_read_aligned_percent" : 0.75,
+            "multiple_genomes" : False
+        }
+    )
+
+rule coverage_reference_genomes:
+    input:
+        reference_fasta = config["REFERENCE_GENOMES_DIR"] + "/{reference_genome}.fasta",
+    output:
+        "data/coverage/{reference_genome}/{reference_genome}_coverage_table.cov"
+    conda:
+        "envs/coverm.yaml"
+    params:
+        # min_read_percent_identity=0.9,
+        # min_read_aligned_percent = 0.75,
+        read_files = config["LONG_READ_DIR"] + "/*.fastq.gz",
+        reference_parameters = lambda wildcards: get_coverm_reference_params(wildcards.reference_genome),
+    threads:
+        config["MAX_THREADS"]
+    message:
+        "Mapping reads to {input.reference_fasta} with CoverM"
+    script:
+        "get_coverage.py -g{params.reference_parameters}"
+    # shell:
+    #     """
+    #     echo {params.reference_parameters['min_read_percent_identity']}
+    #     mkdir -p data/coverage/{wildcards.reference_genome}
+    #
+    #     coverm make --reference {input.reference_fasta} --threads {threads} \
+    #     --output-directory data/coverage/{wildcards.reference_genome}/ \
+    #     --single {params.read_files} --mapper minimap2-ont
+    #
+    #     coverm genome --bam-files data/coverage/{wildcards.reference_genome}/*.bam --threads {threads}
+    #     --methods relative_abundance --single-genome {input.reference_fasta} \
+    #     > data/coverage/{wildcards.reference_genome}/{wildcards.reference_genome}_rel_abundance_table.tsv
+    #     """
 
 # For each sample (reads) map to all assemblies produced (medaka) for that sample
 # {sample}_mean_coverage.tsv
