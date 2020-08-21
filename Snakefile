@@ -160,6 +160,7 @@ rule canu:
         min_input_coverage=0,
         stop_on_low_coverage=0,
         corrected_error_rate=0.105,
+        use_grid="false",
         max_memory=config["MAX_MEMORY"]
     conda:
          "envs/canu.yaml"
@@ -172,7 +173,7 @@ rule canu:
         mkdir -p data/assembly/{wildcards.sample}/canu
         canu -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ \
         -nanopore-raw {input.reads} genomeSize={params.genome_size} -maxMemory={params.max_memory} -maxThreads={threads} \
-        -corThreads {threads} -useGrid false correctedErrorRate={params.corrected_error_rate} \ 
+        -corThreads={threads} -useGrid={params.use_grid} correctedErrorRate={params.corrected_error_rate} \ 
         -minReadLength={params.min_read_length} -minOverlapLength={params.min_overlap_length} \
         -minInputCoverage {params.min_input_coverage} -stopOnLowCoverage={params.stop_on_low_coverage} -fast
         cp data/assembly/{wildcards.sample}/canu/assembly.fasta \
