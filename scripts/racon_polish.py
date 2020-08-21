@@ -26,7 +26,7 @@ for round in range(snakemake.params.rounds):
                 out, snakemake.wildcards.sample,snakemake.wildcards.assembler,round),
                 shell=True).wait()
             # Polish
-            subprocess.Popen("racon ‐‐include-unpolished -m {} -x {} -g {} -w {} -t {} {} {}/{}.{}.pol.{}.paf {} " \
+            subprocess.Popen("racon --include-unpolished -m {} -x {} -g {} -w {} -t {} {} {}/{}.{}.pol.{}.paf {} " \
                              "> {}/{}.{}.pol.{}.fasta".format(
                 snakemake.params.match,
                 snakemake.params.mismatch,
@@ -50,7 +50,7 @@ for round in range(snakemake.params.rounds):
                 out,snakemake.wildcards.sample,snakemake.wildcards.assembler,round),
                 shell=True).wait()
             # Polish the assembly from the previous round
-            subprocess.Popen("racon ‐‐include-unpolished -m {} -x {} -g {} -w {} -t {} {} {}/{}.{}.pol.{}.paf " \
+            subprocess.Popen("racon --include-unpolished -m {} -x {} -g {} -w {} -t {} {} {}/{}.{}.pol.{}.paf " \
                              "{}/{}.{}.pol.{}.fasta > {}/{}.{}.pol.{}.fasta".format(
                 snakemake.params.match,
                 snakemake.params.mismatch,
