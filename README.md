@@ -21,3 +21,7 @@ For QC + assembly + polishing
 ```shell script
 snakemake --use-conda --latency-wait 10 --keep-going --cores 30 polish --configfile config.yaml 
 ```
+For reference genome coverage
+```shell script
+snakemake --use-conda --latency-wait 10 --keep-going --cores 30 coverage_reference_genomes_all --configfile config.yaml 
+```

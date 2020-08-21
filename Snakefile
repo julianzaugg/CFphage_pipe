@@ -319,15 +319,18 @@ rule coverage_reference_genomes_all:
 
 
 def get_coverm_reference_params(wildcards):
+    """
+    Get coverm and related parameters for reference genome from config file
+    """
+    param_dict = {
+        "min_read_percent_identity" : 0.9,
+        "min_read_aligned_percent" : 0.75,
+        "multiple_genomes" : False
+    }
     if wildcards in config["REFERENCE_GENOMES_PARAMS"]["COVERM_PARAMS"]:
-        return(config["REFERENCE_GENOMES_PARAMS"]["COVERM_PARAMS"][wildcards])
-    return(
-        {
-            "min_read_percent_identity" : 0.9,
-            "min_read_aligned_percent" : 0.75,
-            "multiple_genomes" : False
-        }
-    )
+        param_dict.update(config["REFERENCE_GENOMES_PARAMS"]["COVERM_PARAMS"][wildcards])
+
+    return(param_dict)
 
 rule coverage_reference_genomes:
     input:
@@ -340,26 +343,13 @@ rule coverage_reference_genomes:
         # min_read_percent_identity=0.9,
         # min_read_aligned_percent = 0.75,
         read_files = config["LONG_READ_DIR"] + "/*.fastq.gz",
-        reference_parameters = lambda wildcards: get_coverm_reference_params(wildcards.reference_genome),
+        reference_coverm_parameters_dict = lambda wildcards: get_coverm_reference_params(wildcards.reference_genome),
     threads:
         config["MAX_THREADS"]
     message:
         "Mapping reads to {input.reference_fasta} with CoverM"
     script:
-        "get_coverage.py -g{params.reference_parameters}"
-    # shell:
-    #     """
-    #     echo {params.reference_parameters['min_read_percent_identity']}
-    #     mkdir -p data/coverage/{wildcards.reference_genome}
-    #
-    #     coverm make --reference {input.reference_fasta} --threads {threads} \
-    #     --output-directory data/coverage/{wildcards.reference_genome}/ \
-    #     --single {params.read_files} --mapper minimap2-ont
-    #
-    #     coverm genome --bam-files data/coverage/{wildcards.reference_genome}/*.bam --threads {threads}
-    #     --methods relative_abundance --single-genome {input.reference_fasta} \
-    #     > data/coverage/{wildcards.reference_genome}/{wildcards.reference_genome}_rel_abundance_table.tsv
-    #     """
+        "get_coverage.py"
 
 # For each sample (reads) map to all assemblies produced (medaka) for that sample
 # {sample}_mean_coverage.tsv
@@ -368,6 +358,14 @@ rule coverage_reference_genomes:
 # {sample}_covered_fraction.tsv
 # rule coverage_assemblies:
 # ------------------------------------------------------------------------------------------------
+# Assembly evaluation
+
+# rule checkm:
+
+# rule gtdbtk:
+
+# ------------------------------------------------------------------------------------------------
+
 
 # TODO
 #          checkm, gtdbtk, busco?

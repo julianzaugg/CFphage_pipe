@@ -20,5 +20,10 @@ MAX_THREADS:
     8
 MAX_MEMORY:
     100
-REFERENCE_GENOMES:
-    none
+REFERENCE_GENOMES_DIR:
+    test_data/reference_genomes
+
+REFERENCE_GENOMES_PARAMS:
+    COVERM_PARAMS:
+        example_ref_genome:
+            multiple_genomes: True
