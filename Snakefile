@@ -342,7 +342,7 @@ rule coverage_reference_genomes:
     params:
         # min_read_percent_identity=0.9,
         # min_read_aligned_percent = 0.75,
-        read_files = config["LONG_READ_DIR"] + "/*.fastq.gz",
+        read_files = "data/nanofilt/*.fastq.gz",
         reference_coverm_parameters_dict = lambda wildcards: get_coverm_reference_params(wildcards.reference_genome),
     threads:
         config["MAX_THREADS"]
