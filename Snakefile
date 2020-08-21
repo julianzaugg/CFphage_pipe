@@ -159,6 +159,7 @@ rule canu:
         min_overlap_length=500,
         min_input_coverage=0,
         stop_on_low_coverage=0,
+        corrected_error_rate=0.105,
         max_memory=config["MAX_MEMORY"]
     conda:
          "envs/canu.yaml"
@@ -170,7 +171,8 @@ rule canu:
         """
         mkdir -p data/assembly/{wildcards.sample}/canu
         canu -p {wildcards.sample} -d data/assembly/{wildcards.sample}/canu/ \
-        -nanopore {input.reads} genomeSize={params.genome_size} -maxMemory={params.max_memory} -maxThreads={threads} \
+        -nanopore-raw {input.reads} genomeSize={params.genome_size} -maxMemory={params.max_memory} -maxThreads={threads} \
+        -corThreads {threads} -useGrid false correctedErrorRate={params.corrected_error_rate} \ 
         -minReadLength={params.min_read_length} -minOverlapLength={params.min_overlap_length} \
         -minInputCoverage {params.min_input_coverage} -stopOnLowCoverage={params.stop_on_low_coverage} -fast
         cp data/assembly/{wildcards.sample}/canu/assembly.fasta \
@@ -297,6 +299,25 @@ rule medaka_polish:
         """
 
 # ------------------------------------------------------------------------------------------------
+# Coverage
+#   - Of provided reference genomes
+#   - Of assemblies
+
+
+# For all samples map to all reference genomes
+# rule coverage_references:
+    # input:
+        # expand("data/coverage/references_coverage",
+               # sample = SAMPLES, assembler = ASSEMBLERS)
+
+# For each sample (reads) map to all assemblies produced (medaka) for that sample
+# {sample}_mean_coverage.tsv
+# {sample}_read_counts.tsv
+# {sample}_relative_abundance.tsv (genome)
+# {sample}_covered_fraction.tsv
+# rule coverage_assemblies:
+# ------------------------------------------------------------------------------------------------
+
 # TODO
 #          checkm, gtdbtk, busco?
 #          coverm/to_{reference}
