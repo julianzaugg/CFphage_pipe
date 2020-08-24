@@ -46,16 +46,16 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             """,
             shell=True).wait()
 
-        subprocess.Popen(
-            f"""
-            for bam_file in {out}/*.bam; do
-                coverm filter -b $bam_file -o {out_filtered}/${{bam_file%.bam}} \
-                --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
-                --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
-                --threads {snakemake.threads}
-            done
-            """,
-            shell=True).wait()
+        for bam_file in glob.glob(f"{out}/*.bam"):
+            out_bam_filename = pathlib.Path(bam_file).name.replace(".bam", "_filtered.bam")
+            subprocess.Popen(
+                f"""
+                    coverm filter -b {bam_file} -o {out_filtered}/{out_bam_filename} \
+                    --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
+                    --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
+                    --threads {snakemake.threads}
+                """,
+                shell=True).wait()
 
         #             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
         #             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
