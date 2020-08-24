@@ -348,7 +348,7 @@ rule coverage_reference_genomes:
     message:
         "Mapping reads to {input.reference_fasta} with CoverM"
     script:
-        "scripts/get_coverage.py"
+        "scripts/get_coverage_reference.py"
 
 # For each sample (reads) map to all assemblies produced (medaka) for that sample
 # {sample}_mean_coverage.tsv
