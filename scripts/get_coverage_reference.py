@@ -41,7 +41,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --min-covered-fraction 0.0 --discard-unmapped \
-            --single-genome {snakemake.input.reference_fasta} \
+            --single-genome \
             > data/coverage/{snakemake.wildcards.reference_genome}/{table_out} \
             """,
             shell=True).wait()
@@ -54,7 +54,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
             --min-covered-fraction 0.0 --discard-unmapped \
-            --single-genome {snakemake.input.reference_fasta} \
+            --single-genome \
             > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out} \
             """,
             shell=True).wait()
