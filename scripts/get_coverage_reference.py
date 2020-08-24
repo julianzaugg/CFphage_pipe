@@ -40,7 +40,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
 
         subprocess.Popen(
             f"""
-            coverm genome --bam-files {bam_dir}/*.bam \
+            coverm genome --bam-files {out}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --min-covered-fraction 0.0 --discard-unmapped \
@@ -51,7 +51,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
 
         subprocess.Popen(
             f"""
-            coverm genome --bam-files {bam_dir}/*.bam \
+            coverm genome --bam-files {out}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
