@@ -59,7 +59,10 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
                 """,
                 shell=True).wait()
 
-        # Calculate genome coverage stats on filtered BAM files.
+        # Calculate genome coverage stats on filtered BAM files. Normally would calculate this on the filtered
+        # BAM files generated above, however method = relative_abundance would result in 100% mapped reads.
+        # As such, the filtering is performed again on the original BAM files to get the correct abundance value.
+        # Assumes "--discard-unmapped" was NOT used in the original "coverm make" command
         subprocess.Popen(
             f"""
             coverm genome --bam-files {out}/*.bam \
