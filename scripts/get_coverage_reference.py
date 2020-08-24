@@ -7,9 +7,9 @@ import glob
 if not os.path.exists(snakemake.input.reference_fasta):
     sys.exit("No reference genome fasta found")
 
-out = f"data/coverage/{snakemake.wildcards.reference_genome}"
-out_filtered = f"data/coverage/{snakemake.wildcards.reference_genome}/filtered"
-pathlib.Path(out_filtered).mkdir(parents=True, exist_ok=True)
+out_dir = f"data/coverage/{snakemake.wildcards.reference_genome}"
+out_dir_filtered = f"data/coverage/{snakemake.wildcards.reference_genome}/filtered"
+pathlib.Path(out_dir_filtered).mkdir(parents=True, exist_ok=True)
 
 MIN_READ_IDENTITY_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_percent_identity"]
 MIN_READ_ALIGNED_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_aligned_percent"]
@@ -19,7 +19,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
     subprocess.Popen(
         f"""
         coverm make --reference {snakemake.input.reference_fasta} --threads {snakemake.threads} \
-        --output-directory data/coverage/{snakemake.wildcards.reference_genome} \
+        --output-directory {out_dir} \
         --single {snakemake.params.read_files} \
         --mapper minimap2-ont
         """,
@@ -39,7 +39,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         # Calculate genome coverage stats on BAM files.
         subprocess.Popen(
             f"""
-            coverm genome --bam-files {out}/*.bam \
+            coverm genome --bam-files {out_dir}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --single-genome \
@@ -48,11 +48,11 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             shell=True).wait()
 
         # Create the filtered BAM files.
-        for bam_file in glob.glob(f"{out}/*.bam"):
+        for bam_file in glob.glob(f"{out_dir}/*.bam"):
             out_bam_filename = pathlib.Path(bam_file).name.replace(".bam", "_filtered.bam")
             subprocess.Popen(
                 f"""
-                    coverm filter -b {bam_file} -o {out_filtered}/{out_bam_filename} \
+                    coverm filter -b {bam_file} -o {out_dir_filtered}/{out_bam_filename} \
                     --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
                     --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
                     --threads {snakemake.threads}
@@ -65,12 +65,12 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         # Assumes "--discard-unmapped" was NOT used in the original "coverm make" command
         subprocess.Popen(
             f"""
-            coverm genome --bam-files {out}/*.bam \
+            coverm genome --bam-files {out_dir}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
             --single-genome \
-            > {out_filtered}/{table_out}_filtered.tsv
+            > {out_dir_filtered}/{table_out}_filtered.tsv
             """,
             shell=True).wait()
