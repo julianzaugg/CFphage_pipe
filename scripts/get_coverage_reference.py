@@ -34,7 +34,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             table_out = f"{snakemake.wildcards.reference_genome}_coverage_table"
         elif method == "count":
             table_out = f"{snakemake.wildcards.reference_genome}_count_table"
-            min_covered_fraction_param = ""
+            # min_covered_fraction_param = ""
 
         subprocess.Popen(
             f"""
