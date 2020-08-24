@@ -52,7 +52,6 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
                 coverm filter -b $bam_file -o {out_filtered}/${{bam_file%.bam}} \
                 --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
                 --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
-                --discard-unmapped \
                 --threads {snakemake.threads}
             done
             """,
