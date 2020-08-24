@@ -21,6 +21,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         coverm make --reference {snakemake.input.reference_fasta} --threads {snakemake.threads} \
         --output-directory data/coverage/{snakemake.wildcards.reference_genome} \
         --single {snakemake.params.read_files} \
+        --discard-unmapped \
         --mapper minimap2-ont
         """,
         shell=True).wait()
@@ -35,14 +36,22 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             table_out = f"{snakemake.wildcards.reference_genome}_count_table.tsv"
             min_covered_fraction_param = ""
 
-        subprocess.Popen(
-            f"""
+        print(f"""
             coverm genome --bam-files {out}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --min-covered-fraction 0.0 --discard-unmapped \
             --single-genome \
-            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out} \
+            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out}
+            """)
+        subprocess.Popen(
+            f"""
+            coverm genome --bam-files {out}/*.bam \
+            {min_covered_fraction_param} \
+            --threads {snakemake.threads} --methods {method} \
+            --min-covered-fraction 0.0 \
+            --single-genome \
+            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out}
             """,
             shell=True).wait()
 
@@ -53,8 +62,8 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             --threads {snakemake.threads} --methods {method} \
             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
-            --min-covered-fraction 0.0 --discard-unmapped \
+            --min-covered-fraction 0.0 \
             --single-genome \
-            > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out} \
+            > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out}
             """,
             shell=True).wait()
