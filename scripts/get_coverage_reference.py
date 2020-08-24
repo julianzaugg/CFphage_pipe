@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import pathlib
 
 
 if not os.path.exists(snakemake.input.reference_fasta):
@@ -8,11 +9,7 @@ if not os.path.exists(snakemake.input.reference_fasta):
 
 out = f"data/coverage/{snakemake.wildcards.reference_genome}"
 out_filtered = f"data/coverage/{snakemake.wildcards.reference_genome}/filtered"
-try:
-    os.makedirs(out)
-    os.makedirs(out_filtered)
-except FileExistsError:
-    pass
+pathlib.Path(out_filtered).mkdir(parents=True, exist_ok=True)
 
 MIN_READ_IDENTITY_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_percent_identity"]
 MIN_READ_ALIGNED_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_aligned_percent"]
@@ -23,7 +20,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         f"""
         coverm make --reference {snakemake.input.reference_fasta} --threads {snakemake.threads} \
         --output-directory data/coverage/{snakemake.wildcards.reference_genome} \
-        --single {snakemake.params.read_files} 
+        --single {snakemake.params.read_files} \
         --mapper minimap2-ont
         """,
         shell=True).wait()
