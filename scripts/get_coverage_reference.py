@@ -36,6 +36,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         elif method == "covered_fraction":
             table_out = f"{snakemake.wildcards.reference_genome}_covered_fraction_table"
 
+        # Calculate genome coverage stats on BAM files.
         subprocess.Popen(
             f"""
             coverm genome --bam-files {out}/*.bam \
@@ -46,6 +47,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             """,
             shell=True).wait()
 
+        # Create the filtered BAM files.
         for bam_file in glob.glob(f"{out}/*.bam"):
             out_bam_filename = pathlib.Path(bam_file).name.replace(".bam", "_filtered.bam")
             subprocess.Popen(
@@ -57,14 +59,14 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
                 """,
                 shell=True).wait()
 
-        #             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
-        #             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
-        #             --discard-unmapped \
+        # Calculate genome coverage stats on filtered BAM files.
         subprocess.Popen(
             f"""
             coverm genome --bam-files {out}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
+            --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
+            --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
             --single-genome \
             > {out_filtered}/{table_out}_filtered.tsv
             """,
