@@ -21,7 +21,6 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         coverm make --reference {snakemake.input.reference_fasta} --threads {snakemake.threads} \
         --output-directory data/coverage/{snakemake.wildcards.reference_genome} \
         --single {snakemake.params.read_files} \
-        --discard-unmapped \
         --mapper minimap2-ont
         """,
         shell=True).wait()
@@ -54,6 +53,8 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             --threads {snakemake.threads} --methods {method} \
             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
+            --bam-file-cache-directory data/coverage/{snakemake.wildcards.reference_genome}/filtered/ \
+            --discard-unmapped \
             --single-genome \
             > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out}_filtered.tsv
             """,
