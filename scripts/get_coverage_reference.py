@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 import pathlib
-
+import glob
 
 if not os.path.exists(snakemake.input.reference_fasta):
     sys.exit("No reference genome fasta found")
