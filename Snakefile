@@ -314,9 +314,8 @@ rule medaka_polish:
 
 rule coverage_reference_genomes_all:
     input:
-        expand("data/coverage/{reference_genome}/{reference_genome}_coverage_table.cov",
+        expand("data/coverage/{reference_genome}/{reference_genome}_coverage_table.tsv",
                reference_genome = REFERENCE_GENOMES)
-
 
 def get_coverm_reference_params(wildcards):
     """
@@ -337,7 +336,7 @@ rule coverage_reference_genomes:
     input:
         reference_fasta = config["REFERENCE_GENOMES_DIR"] + "/{reference_genome}.fasta",
     output:
-        "data/coverage/{reference_genome}/{reference_genome}_coverage_table.cov"
+        "data/coverage/{reference_genome}/{reference_genome}_coverage_table.tsv"
     conda:
         "envs/coverm.yaml"
     params:
@@ -350,11 +349,7 @@ rule coverage_reference_genomes:
     script:
         "scripts/get_coverage_reference.py"
 
-# For each sample (reads) map to all assemblies produced (medaka) for that sample
-# {sample}_mean_coverage.tsv
-# {sample}_read_counts.tsv
-# {sample}_relative_abundance.tsv (genome)
-# {sample}_covered_fraction.tsv
+
 # rule coverage_assemblies:
 # ------------------------------------------------------------------------------------------------
 # Assembly evaluation

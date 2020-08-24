@@ -26,15 +26,16 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         """,
         shell=True).wait()
 
-    for method in ["relative_abundance", "mean", "count"]:
+    for method in ["relative_abundance", "mean", "count", "covered_fraction"]:
         min_covered_fraction_param = "--min-covered-fraction 0.0"
         if method == "relative_abundance":
-            table_out = f"{snakemake.wildcards.reference_genome}_rel_abundance_table"
+            table_out = f"{snakemake.wildcards.reference_genome}_relative_abundance_table"
         elif method == "mean":
             table_out = f"{snakemake.wildcards.reference_genome}_coverage_table"
         elif method == "count":
             table_out = f"{snakemake.wildcards.reference_genome}_count_table"
-            # min_covered_fraction_param = ""
+        elif method == "count":
+            table_out = f"{snakemake.wildcards.reference_genome}_covered_fraction_table"
 
         subprocess.Popen(
             f"""
