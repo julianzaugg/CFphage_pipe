@@ -7,41 +7,57 @@ if not os.path.exists(snakemake.input.reference_fasta):
     sys.exit("No reference genome fasta found")
 
 out = f"data/coverage/{snakemake.wildcards.reference_genome}"
+out_filtered = f"data/coverage/{snakemake.wildcards.reference_genome}/filtered"
 try:
     os.makedirs(out)
+    os.makedirs(out_filtered)
 except FileExistsError:
     pass
 
 MIN_READ_IDENTITY_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_percent_identity"]
 MIN_READ_ALIGNED_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_aligned_percent"]
 
+# Single entry in the reference fasta
 if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == False:
-    subprocess.Popen(f"coverm make --reference {snakemake.input.reference_fasta} --threads {snakemake.threads} " \
-                     f"--output-directory data/coverage/{snakemake.wildcards.reference_genome} " \
-                     f"--single {snakemake.params.read_files} --mapper minimap2-ont")
-
     subprocess.Popen(
-        f"coverm genome --bam-files data/coverage/{snakemake.wildcards.reference_genome}/*.bam " \
-        f"--threads {snakemake.threads} --methods relative_abundance " \
-        f"--min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT}"
-        f"--min-covered-fraction 0.0 --discard-unmapped " \
-        f"--single-genome {snakemake.input.reference_fasta} " \
-        f"> data/coverage/{snakemake.wildcards.reference_genome}/{wildcards.reference_genome}_rel_abundance_table.tsv")
+        f"""
+        coverm make --reference {snakemake.input.reference_fasta} --threads {snakemake.threads} \
+        --output-directory data/coverage/{snakemake.wildcards.reference_genome} \
+        --single {snakemake.params.read_files} 
+        --mapper minimap2-ont
+        """,
+        shell=True).wait()
 
-    subprocess.Popen(
-        f"coverm genome --bam-files data/coverage/{snakemake.wildcards.reference_genome}/*.bam " \
-        f"--threads {snakemake.threads} --methods mean " \
-        f"--min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT}"
-        f"--min-covered-fraction 0.0 --discard-unmapped " \
-        f"--single-genome {snakemake.input.reference_fasta} " \
-        f"> data/coverage/{snakemake.wildcards.reference_genome}/{snakemake.wildcards.reference_genome}_coverage_table.tsv")
+    for method in ["relative_abundance", "mean", "count"]:
+        min_covered_fraction_param = "--min-covered-fraction 0.0"
+        if method == "relative_abundance":
+            table_out = f"{snakemake.wildcards.reference_genome}_rel_abundance_table.tsv"
+        elif method == "mean":
+            table_out = f"{snakemake.wildcards.reference_genome}_coverage_table.tsv"
+        elif method == "count":
+            table_out = f"{snakemake.wildcards.reference_genome}_count_table.tsv"
+            min_covered_fraction_param = ""
 
-    subprocess.Popen(
-        f"coverm genome --bam-files data/coverage/{snakemake.wildcards.reference_genome}/*.bam " \
-        f"--threads {snakemake.threads} --methods count " \
-        f"--min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT}"
-        f"--min-covered-fraction 0.0 --discard-unmapped " \
-        f"--single-genome {snakemake.input.reference_fasta} " \
-        f"> data/coverage/{snakemake.wildcards.reference_genome}/{snakemake.wildcards.reference_genome}_count_table.tsv")
+        subprocess.Popen(
+            f"""
+            coverm genome --bam-files {bam_dir}/*.bam \
+            {min_covered_fraction_param} \
+            --threads {snakemake.threads} --methods {method} \
+            --min-covered-fraction 0.0 --discard-unmapped \
+            --single-genome {snakemake.input.reference_fasta} \
+            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out} \
+            """,
+            shell=True).wait()
 
-# else:
+        subprocess.Popen(
+            f"""
+            coverm genome --bam-files {bam_dir}/*.bam \
+            {min_covered_fraction_param} \
+            --threads {snakemake.threads} --methods {method} \
+            --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
+            --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
+            --min-covered-fraction 0.0 --discard-unmapped \
+            --single-genome {snakemake.input.reference_fasta} \
+            > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out} \
+            """,
+            shell=True).wait()
