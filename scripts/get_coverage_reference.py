@@ -48,14 +48,25 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
 
         subprocess.Popen(
             f"""
-            coverm genome --bam-files {out}/*.bam \
+            for bam_file in {out}/*.bam; do
+                coverm filter -b $bam_file -o {out_filtered}/${{bam_file%.bam}} \
+                --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
+                --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
+                --discard-unmapped \
+                --threads {snakemake.threads}
+            done
+            """,
+            shell=True).wait()
+
+        #             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
+        #             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
+        #             --discard-unmapped \
+        subprocess.Popen(
+            f"""
+            coverm genome --bam-files {out_filtered}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
-            --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
-            --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
-            --bam-file-cache-directory data/coverage/{snakemake.wildcards.reference_genome}/filtered/ \
-            --discard-unmapped \
             --single-genome \
-            > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out}_filtered.tsv
+            > {out_filtered}/{table_out}_filtered.tsv
             """,
             shell=True).wait()
