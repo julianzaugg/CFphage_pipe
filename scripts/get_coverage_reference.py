@@ -29,29 +29,20 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
     for method in ["relative_abundance", "mean", "count"]:
         min_covered_fraction_param = "--min-covered-fraction 0.0"
         if method == "relative_abundance":
-            table_out = f"{snakemake.wildcards.reference_genome}_rel_abundance_table.tsv"
+            table_out = f"{snakemake.wildcards.reference_genome}_rel_abundance_table"
         elif method == "mean":
-            table_out = f"{snakemake.wildcards.reference_genome}_coverage_table.tsv"
+            table_out = f"{snakemake.wildcards.reference_genome}_coverage_table"
         elif method == "count":
-            table_out = f"{snakemake.wildcards.reference_genome}_count_table.tsv"
+            table_out = f"{snakemake.wildcards.reference_genome}_count_table"
             min_covered_fraction_param = ""
 
-        print(f"""
-            coverm genome --bam-files {out}/*.bam \
-            {min_covered_fraction_param} \
-            --threads {snakemake.threads} --methods {method} \
-            --min-covered-fraction 0.0 --discard-unmapped \
-            --single-genome \
-            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out}
-            """)
         subprocess.Popen(
             f"""
             coverm genome --bam-files {out}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
-            --min-covered-fraction 0.0 \
             --single-genome \
-            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out}
+            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out}.tsv
             """,
             shell=True).wait()
 
@@ -62,8 +53,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             --threads {snakemake.threads} --methods {method} \
             --min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} \
             --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT} \
-            --min-covered-fraction 0.0 \
             --single-genome \
-            > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out}
+            > data/coverage/{snakemake.wildcards.reference_genome}/filtered/{table_out}_filtered.tsv
             """,
             shell=True).wait()
