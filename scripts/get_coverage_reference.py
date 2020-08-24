@@ -33,7 +33,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             table_out = f"{snakemake.wildcards.reference_genome}_coverage_table"
         elif method == "count":
             table_out = f"{snakemake.wildcards.reference_genome}_count_table"
-        elif method == "count":
+        elif method == "covered_fraction":
             table_out = f"{snakemake.wildcards.reference_genome}_covered_fraction_table"
 
         subprocess.Popen(
@@ -62,7 +62,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
         #             --discard-unmapped \
         subprocess.Popen(
             f"""
-            coverm genome --bam-files {out_filtered}/*.bam \
+            coverm genome --bam-files {out}/*.bam \
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --single-genome \
