@@ -1,12 +1,10 @@
 import sys
 import os
 import subprocess
-import shutil
 
 
 if not os.path.exists(snakemake.input.reference_fasta):
     sys.exit("No reference genome fasta found")
-
 
 out = f"data/coverage/{snakemake.wildcards.reference_genome}"
 try:
@@ -14,18 +12,36 @@ try:
 except FileExistsError:
     pass
 
-# {snakemake.params.read_files}
-# {snakemake.params.reference_coverm_parameters_dict}
+MIN_READ_IDENTITY_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_percent_identity"]
+MIN_READ_ALIGNED_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_aligned_percent"]
 
-# if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == False:
-#     echo {params.reference_parameters['min_read_percent_identity']}
-#     mkdir -p data/coverage/{wildcards.reference_genome}
-#
-#     coverm make --reference {input.reference_fasta} --threads {snakemake.threads} \
-#     --output-directory data/coverage/{wildcards.reference_genome}/ \
-#     --single {params.read_files} --mapper minimap2-ont
-#
-#     coverm genome --bam-files data/coverage/{wildcards.reference_genome}/*.bam --threads {threads}
-#     --methods relative_abundance --single-genome {input.reference_fasta} \
-#     > data/coverage/{wildcards.reference_genome}/{wildcards.reference_genome}_rel_abundance_table.tsv
+if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == False:
+    subprocess.Popen(f"coverm make --reference {snakemake.input.reference_fasta} --threads {snakemake.threads} " \
+                     f"--output-directory data/coverage/{snakemake.wildcards.reference_genome} " \
+                     f"--single {snakemake.params.read_files} --mapper minimap2-ont")
+
+    subprocess.Popen(
+        f"coverm genome --bam-files data/coverage/{snakemake.wildcards.reference_genome}/*.bam " \
+        f"--threads {snakemake.threads} --methods relative_abundance " \
+        f"--min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT}"
+        f"--min-covered-fraction 0.0 --discard-unmapped " \
+        f"--single-genome {snakemake.input.reference_fasta} " \
+        f"> data/coverage/{snakemake.wildcards.reference_genome}/{wildcards.reference_genome}_rel_abundance_table.tsv")
+
+    subprocess.Popen(
+        f"coverm genome --bam-files data/coverage/{snakemake.wildcards.reference_genome}/*.bam " \
+        f"--threads {snakemake.threads} --methods mean " \
+        f"--min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT}"
+        f"--min-covered-fraction 0.0 --discard-unmapped " \
+        f"--single-genome {snakemake.input.reference_fasta} " \
+        f"> data/coverage/{snakemake.wildcards.reference_genome}/{snakemake.wildcards.reference_genome}_coverage_table.tsv")
+
+    subprocess.Popen(
+        f"coverm genome --bam-files data/coverage/{snakemake.wildcards.reference_genome}/*.bam " \
+        f"--threads {snakemake.threads} --methods count " \
+        f"--min-read-percent-identity {MIN_READ_IDENTITY_PERCENT} --min-read-aligned-percent {MIN_READ_ALIGNED_PERCENT}"
+        f"--min-covered-fraction 0.0 --discard-unmapped " \
+        f"--single-genome {snakemake.input.reference_fasta} " \
+        f"> data/coverage/{snakemake.wildcards.reference_genome}/{snakemake.wildcards.reference_genome}_count_table.tsv")
+
 # else:

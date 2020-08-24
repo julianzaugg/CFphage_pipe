@@ -320,7 +320,8 @@ rule coverage_reference_genomes_all:
 
 def get_coverm_reference_params(wildcards):
     """
-    Get coverm and related parameters for reference genome from config file
+    Return coverM and other coverage calculation parameters for a reference genome.
+    Will use parameters from config file if provided, else default.
     """
     param_dict = {
         "min_read_percent_identity" : 0.9,
@@ -340,10 +341,8 @@ rule coverage_reference_genomes:
     conda:
         "envs/coverm.yaml"
     params:
-        # min_read_percent_identity=0.9,
-        # min_read_aligned_percent = 0.75,
         read_files = "data/nanofilt/*.fastq.gz",
-        reference_coverm_parameters_dict = lambda wildcards: get_coverm_reference_params(wildcards.reference_genome),
+        reference_coverm_parameters_dict = lambda wildcards: get_coverm_reference_params(wildcards.reference_genome)
     threads:
         config["MAX_THREADS"]
     message:
