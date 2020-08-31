@@ -321,7 +321,7 @@ rule circlator:
         assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
         reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz"
     output:
-        "data/circlator/{sample}/{sample}.{assembler}.final.fasta"
+        "data/circlator/{sample}/{assembler}/{sample}.{assembler}.final.fasta"
     threads:
         config["MAX_THREADS"]
     conda:
@@ -333,10 +333,11 @@ rule circlator:
         circlator all --threads {threads} {input.assembly} {input.reads} data/circlator/temp 
         if [ -f data/circlator/temp/06.fixstart.fasta ]
         then
-            cp data/circlator/{wildcards.sample}/06.fixstart.fasta {output}
+            cp data/circlator/temp/06.fixstart.fasta {output}
         else
             cp {input.assembly} {output}
         fi
+        mv data/circlator/temp/* data/circlator/{sample}/{assembler}/
         rm -r data/circlator/temp
         """
 
