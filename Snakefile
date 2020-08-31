@@ -337,7 +337,7 @@ rule circlator:
         else
             cp {input.assembly} {output}
         fi
-        mv data/circlator/temp/* data/circlator/{sample}/{assembler}/
+        mv data/circlator/temp/* data/circlator/{wildcards.sample}/{wildcards.assembler}/
         rm -r data/circlator/temp
         """
 
