@@ -313,6 +313,8 @@ rule circularise:
     input:
         expand("data/circlator/{sample}/{sample}.{assembler}.final.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS)
+    output:
+        temp(touch("finished_circularising"))
 
 rule circlator:
     input:
