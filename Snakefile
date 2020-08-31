@@ -319,7 +319,7 @@ rule circularise:
 rule circlator:
     input:
         assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
-        reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz",
+        reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz"
     output:
         "data/circlator/{sample}/{sample}.{assembler}.final.fasta"
     threads:
@@ -330,13 +330,14 @@ rule circlator:
         "Attempting to circularise {input.assembly} with Circlator"
     shell:
         """
-        circlator all --threads {threads} {input.assembly} {input.reads} data/circlator/{wildcards.sample}
-        if [ -f data/circlator/{wildcards.sample}/06.fixstart.fasta ]
+        circlator all --threads {threads} {input.assembly} {input.reads} data/circlator/temp 
+        if [ -f data/circlator/temp/06.fixstart.fasta ]
         then
             cp data/circlator/{wildcards.sample}/06.fixstart.fasta {output}
         else
             cp {input.assembly} {output}
         fi
+        rm -r data/circlator/temp
         """
 
 # ------------------------------------------------------------------------------------------------
