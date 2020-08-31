@@ -328,7 +328,7 @@ rule circlator:
         "Attempting to circularise {input.assembly} with Circlator"
     shell:
         """
-        circlator all {input.assembly} {input.reads} data/circlator/{wildcards.sample}
+        circlator all --threads {threads} {input.assembly} {input.reads} data/circlator/{wildcards.sample}
         if [[ -f data/circlator/{wildcards.sample}/06.fixstart.fasta ]]; then
             cp data/circlator/{wildcards.sample}/06.fixstart.fasta {output}
         else
