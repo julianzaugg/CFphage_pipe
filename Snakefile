@@ -311,7 +311,7 @@ rule medaka_polish:
 # Circularise assemblies (if possible)
 rule circularise:
     input:
-        expand("data/circlator/{sample}/{sample}.{assembler}.final.fasta",
+        expand("data/circlator/{sample}/{assembler}/{sample}.{assembler}.final.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS)
     output:
         temp(touch("finished_circularising"))
