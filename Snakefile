@@ -329,10 +329,10 @@ rule circlator:
     shell:
         """
         circlator all --threads {threads} {input.assembly} {input.reads} data/circlator/{wildcards.sample}
-        if [[ -f data/circlator/{wildcards.sample}/06.fixstart.fasta ]]; then \\
-            cp data/circlator/{wildcards.sample}/06.fixstart.fasta {output} \\
-        else \\
-            cp {input.assembly} {output} \\
+        if [[ -f data/circlator/{wildcards.sample}/06.fixstart.fasta ]]; then \
+            cp data/circlator/{wildcards.sample}/06.fixstart.fasta {output} \
+        else \
+            cp {input.assembly} {output} \
         fi
         """
 
