@@ -328,7 +328,6 @@ rule circlator:
         "Attempting to circularise {input.assembly} with Circlator"
     shell:
         """
-        mkdir -p data/circlator/{wildcards.sample}
         circlator all {input.assembly} {input.reads} data/circlator/{wildcards.sample}
         if [[ -f data/circlator/{wildcards.sample}/06.fixstart.fasta ]]; then
             cp data/circlator/{wildcards.sample}/06.fixstart.fasta {output}
