@@ -7,8 +7,8 @@ import glob
 if not os.path.exists(snakemake.input.reference_fasta):
     sys.exit("No reference genome fasta found")
 
-out_dir = f"data/coverage/{snakemake.wildcards.reference_genome}"
-out_dir_filtered = f"data/coverage/{snakemake.wildcards.reference_genome}/filtered"
+out_dir = f"data/coverage/reference_genomes/{snakemake.wildcards.reference_genome}"
+out_dir_filtered = f"data/coverage/reference_genomes/{snakemake.wildcards.reference_genome}/filtered"
 pathlib.Path(out_dir_filtered).mkdir(parents=True, exist_ok=True)
 
 MIN_READ_IDENTITY_PERCENT = snakemake.params.reference_coverm_parameters_dict["min_read_percent_identity"]
@@ -43,7 +43,7 @@ if snakemake.params.reference_coverm_parameters_dict["multiple_genomes"] == Fals
             {min_covered_fraction_param} \
             --threads {snakemake.threads} --methods {method} \
             --single-genome \
-            > data/coverage/{snakemake.wildcards.reference_genome}/{table_out}.tsv
+            > {out_dir}/{table_out}.tsv
             """,
             shell=True).wait()
 

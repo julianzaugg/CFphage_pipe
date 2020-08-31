@@ -308,13 +308,43 @@ rule medaka_polish:
         """
 
 # ------------------------------------------------------------------------------------------------
+# Circularise assemblies (if possible)
+rule circularise:
+    input:
+        expand("data/circlator/{sample}/{sample}.{assembler}.final.fasta",
+               sample = SAMPLES, assembler = ASSEMBLERS)
+
+rule circlator:
+    input:
+        assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
+        reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz",
+    output:
+        "data/circlator/{sample}/{sample}.{assembler}.final.fasta"
+    threads:
+        config["MAX_THREADS"]
+    conda:
+        "envs/circlator.yaml"
+    message:
+        "Attempting to circularise {input.assembly} with Circlator"
+    shell:
+        """
+        mkdir -p data/circlator/{wildcards.sample}
+        circlator all {input.assembly} {input.reads} data/circlator/{wildcards.sample}
+        if [[ -f data/circlator/{wildcards.sample} {output} ]]; then
+            cp data/circlator/{wildcards.sample}/06.fixstart.fasta {output}
+        else
+            cp {input.assembly} {output}
+        fi
+        """
+
+# ------------------------------------------------------------------------------------------------
 # Coverage
 #   - Of provided reference genomes
 #   - Of assemblies
 
 rule coverage_reference_genomes_all:
     input:
-        expand("data/coverage/{reference_genome}/{reference_genome}_coverage_table.tsv",
+        expand("data/coverage/reference_genomes/{reference_genome}/{reference_genome}_coverage_table.tsv",
                reference_genome = REFERENCE_GENOMES)
 
 def get_coverm_reference_params(wildcards):
@@ -336,7 +366,7 @@ rule coverage_reference_genomes:
     input:
         reference_fasta = config["REFERENCE_GENOMES_DIR"] + "/{reference_genome}.fasta",
     output:
-        "data/coverage/{reference_genome}/{reference_genome}_coverage_table.tsv"
+        "data/coverage/reference_genomes/{reference_genome}/{reference_genome}_coverage_table.tsv"
     conda:
         "envs/coverm.yaml"
     params:
@@ -350,7 +380,26 @@ rule coverage_reference_genomes:
         "scripts/get_coverage_reference.py"
 
 
+# Calculate coverage of all assemblies generated for a sample
+# Combine all the assemblies into single, one-entry-per-genome FASTA file?
+# data/final_assemblies/{sample}_assemblies.fasta
+# data/final_assemblies/{sample}.{assembler}.medaka.fasta
+# rule coverage_assemblies_all:
+#     input:
+#         expand("data/coverage/{sample}/{sample}_coverage_table.tsv", sample = SAMPLES),
+#
 # rule coverage_assemblies:
+#     input:
+#         reads = "data/nanofilt/{sample}_nanofilt.fastq.gz",
+#         assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
+#     output:
+#         "data/coverage/{sample}/{sample}_coverage_table.tsv"
+#     threads:
+#         config["MAX_THREADS"]
+#     message:
+#         "Mapping reads with CoverM to assemblies generated from {wildcards.sample}"
+
+
 # ------------------------------------------------------------------------------------------------
 # Assembly evaluation
 
@@ -363,10 +412,9 @@ rule coverage_reference_genomes:
 
 # TODO
 #          checkm, gtdbtk, busco?
-#          coverm/to_{reference}
 #          coverm/to_assembly
 #          kaiju (profile reads)
 #          compile read stats
 #          virsorter2, vibrant, checkv (separate snakemake?)
 #          plasmid identification (PlasFlow/gplas or PlasClass)
-#          log failed assemblys
+#          log failed assemblies
