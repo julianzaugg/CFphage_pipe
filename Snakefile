@@ -330,7 +330,16 @@ rule circlator:
         "Attempting to circularise {input.assembly} with Circlator"
     shell:
         """
-        circlator all --threads {threads} {input.assembly} {input.reads} data/circlator/temp 
+        circlator all \
+        --threads {threads} \
+        --verbose \
+        --b2r_min_read_length 4000 \
+        --b2r_length_cutoff 30000 \
+        --b2r_discard_unmapped \
+        --bwa_opts "-x ont2d" \
+        --data_type nanopore-raw \
+        {input.assembly} {input.reads} data/circlator/temp
+         
         if [ -f data/circlator/temp/06.fixstart.fasta ]
         then
             cp data/circlator/temp/06.fixstart.fasta {output}
