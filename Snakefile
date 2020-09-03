@@ -208,7 +208,7 @@ rule raven:
         mkdir -p data/assembly/{wildcards.sample}/raven
         raven \ 
         --polishing-rounds {params.polishing_rounds} \
-        --graphical-fragment-assembly data/assembly/{wildcards.sample}/raven/{wildcards.sample}.raven.gfa
+        --graphical-fragment-assembly data/assembly/{wildcards.sample}/raven/{wildcards.sample}.raven.gfa \
         --threads {threads} {input.reads} > {output}
         """
 
