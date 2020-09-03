@@ -154,6 +154,8 @@ rule flye:
          -g {params.genome_size} -t {threads} {params.flye_parameters}
          cp data/assembly/{wildcards.sample}/flye/assembly.fasta \
          data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.fasta
+         cp data/assembly/{wildcards.sample}/flye/assembly_graph.gfa \
+         data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.gfa
          """
 
 rule canu:
@@ -204,7 +206,10 @@ rule raven:
     shell:
         """
         mkdir -p data/assembly/{wildcards.sample}/raven
-        raven --polishing-rounds {params.polishing_rounds} --threads {threads} {input.reads} > {output}
+        raven \ 
+        --polishing-rounds {params.polishing_rounds} \
+        --graphical-fragment-assembly data/assembly/{sample}/raven/{sample}.raven.gfa
+        --threads {threads} {input.reads} > {output}
         """
 
 rule wtdbg2: # also known as redbean
