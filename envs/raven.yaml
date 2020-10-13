@@ -1,4 +1,4 @@
 channels:
   - bioconda
 dependencies:
-  - raven-assembler = 1.1.10
+  - raven-assembler = 1.2.2

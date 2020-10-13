@@ -1,4 +1,4 @@
 channels:
   - bioconda
 dependencies:
-  - checkv = 0.6.0
+  - checkv = 0.7.0

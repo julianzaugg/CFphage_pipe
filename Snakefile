@@ -253,8 +253,8 @@ rule miniasm:
         minimap2 -t {threads} -x ava-ont {input.reads} {input.reads} \
         > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz
         miniasm -f {input.reads} data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz \
-        > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa
-        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.gfa > {output}
+        > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.{wildcards.assembler}.gfa
+        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.{wildcards.assembler}.gfa > {output}
         """
 # ------------------------------------------------------------------------------------------------
 # Polish assemblies
@@ -426,13 +426,15 @@ rule coverage_reference_genomes:
 # rule gtdbtk:
 
 # ------------------------------------------------------------------------------------------------
-
-
 # TODO
 #          checkm, gtdbtk, busco?
 #          coverm/to_assembly
-#          kaiju (profile reads)
+#          kaiju / kraken (profile qc reads)?
 #          compile read stats
-#          virsorter2, vibrant, checkv (separate snakemake?)
+#          virsorter2 / vibrant (phage identication)
+#          checkv  (identify likely true phage)
+#          fastANI + MCL (dereplication of phage)
 #          plasmid identification (PlasFlow/gplas or PlasClass)
 #          log failed assemblies
+#          min contig size for assemblies, 2000bp?
+

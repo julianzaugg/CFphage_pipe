@@ -26,9 +26,10 @@ for round in range(snakemake.params.rounds):
                 """,
                 shell=True).wait()
             # Polish
+            # --include-unpolished
             subprocess.Popen(
                 f"""
-                racon --include-unpolished -m {snakemake.params.match} -x {snakemake.params.mismatch} \
+                racon -m {snakemake.params.match} -x {snakemake.params.mismatch} \
                 -g {snakemake.params.gap} -w {snakemake.params.window_length} -t {snakemake.threads} \
                 {snakemake.input.reads} {out_dir}/{snakemake.wildcards.sample}.{snakemake.wildcards.assembler}.pol.{round}.paf \
                 {snakemake.input.assembly} > {out_dir}/{snakemake.wildcards.sample}.{snakemake.wildcards.assembler}.pol.{round}.fasta
@@ -48,9 +49,10 @@ for round in range(snakemake.params.rounds):
                 """,
                 shell=True).wait()
             # Polish the assembly from the previous round
+            # --include-unpolished
             subprocess.Popen(
                 f"""
-                racon --include-unpolished -m {snakemake.params.match} -x {snakemake.params.mismatch} \
+                racon -m {snakemake.params.match} -x {snakemake.params.mismatch} \
                 -g {snakemake.params.gap} -w {snakemake.params.window_length} -t {snakemake.threads} \
                 {snakemake.input.reads} {out_dir}/{snakemake.wildcards.sample}.{snakemake.wildcards.assembler}.pol.{round}.paf \
                 {out_dir}/{snakemake.wildcards.sample}.{snakemake.wildcards.assembler}.pol.{prev_round}.fasta \
