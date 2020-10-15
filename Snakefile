@@ -383,6 +383,7 @@ def get_coverm_reference_params(wildcards):
 rule coverage_reference_genomes:
     input:
         reference_fasta = config["REFERENCE_GENOMES_DIR"] + "/{reference_genome}.fasta",
+        qc_complete = "finished_QC"
     output:
         "data/coverage/reference_genomes/{reference_genome}/{reference_genome}_coverage_table.tsv"
     conda:
