@@ -31,7 +31,7 @@ onstart:
     if long_reads_dir == "none":
         sys.exit("Need to specify long reads directory")
 
-    valid_assemblers = ["flye", "canu", "miniasm","wtdbg2", "raven"]
+    valid_assemblers = ["flye", "metaflye","canu", "miniasm","wtdbg2", "raven"]
     for assembler in ASSEMBLERS:
         if assembler not in valid_assemblers:
             sys.exit(f'The specified assembler \'{assembler}\' must be one of: ' \
@@ -142,7 +142,7 @@ rule flye:
          "envs/flye.yaml"
     params:
         genome_size = config["GENOME_SIZE"],
-        flye_parameters = config["FLYE_PARAMS"]
+        flye_parameters = config["ASSEMBLER_PARAMS"]["FLYE_PARAMS"]
     threads:
         config["MAX_THREADS"]
     message:
@@ -157,6 +157,34 @@ rule flye:
          cp data/assembly/{wildcards.sample}/flye/assembly_graph.gfa \
          data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.gfa
          """
+
+rule metaflye:
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
+    output:
+        "data/assembly/{sample}/metaflye/{sample}.metaflye.fasta"
+    conda:
+         "envs/flye.yaml"
+    params:
+        genome_size = config["GENOME_SIZE"],
+        metaflye_parameters = config["ASSEMBLER_PARAMS"]["METAFLYE_PARAMS"]
+    threads:
+        config["MAX_THREADS"]
+    message:
+        "Assembling {wildcards.sample} with metaflye"
+    shell:
+         """
+         mkdir -p data/assembly/{wildcards.sample}/metaflye
+         flye --meta --nano-raw {input.reads} -o data/assembly/{wildcards.sample}/metaflye \
+         -g {params.genome_size} -t {threads} {params.metaflye_parameters}
+         cp data/assembly/{wildcards.sample}/metaflye/assembly.fasta \
+         data/assembly/{wildcards.sample}/metaflye/{wildcards.sample}.metaflye.fasta
+         cp data/assembly/{wildcards.sample}/metaflye/assembly_graph.gfa \
+         data/assembly/{wildcards.sample}/metaflye/{wildcards.sample}.metaflye.gfa
+         """
+
+
+
 
 rule canu:
     input:

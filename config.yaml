@@ -6,8 +6,11 @@ ASSEMBLERS:
     flye
 GENOME_SIZE:
     6000000
-FLYE_PARAMS:
-    ""
+ASSEMBLER_PARAMS:
+    FLYE_PARAMS:
+        "--plasmids"
+    METAFLYE_PARAMS:
+        "--plasmids"
 RACON_ROUNDS:
     4
 GUPPY_MODEL:
