@@ -253,8 +253,8 @@ rule miniasm:
         minimap2 -t {threads} -x ava-ont {input.reads} {input.reads} \
         > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz
         miniasm -f {input.reads} data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz \
-        > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.{wildcards.assembler}.gfa
-        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.{wildcards.assembler}.gfa > {output}
+        > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.miniasm.gfa
+        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.miniasm.gfa > {output}
         """
 # ------------------------------------------------------------------------------------------------
 # Polish assemblies
