@@ -154,7 +154,7 @@ rule virsorter:
     params:
         virsorter_database = config["VIRSORTER"]["DATABASE_DIR"]
     output:
-        touch("data/viral_predict/{sample}/virsorter/done")
+        touch("data/viral_reads_predict/{sample}/virsorter/done")
     conda:
         "envs/virsorter.yaml"
     threads:
