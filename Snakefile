@@ -144,6 +144,7 @@ rule reads2fasta:
 rule viral_reads_predict:
     input:
         expand("data/viral_reads_predict/{sample}/virsorter/done", sample = SAMPLES),
+        "finished_QC"
     output:
         temp(touch("finished_viral_reads_predict"))
 
