@@ -168,7 +168,7 @@ rule virsorter:
         --seqfile {input.reads} \
         --working-dir data/viral_predict/{wildcards.sample}/virsorter \
         --db-dir {params.virsorter_database} \
-        --min-length {params.virsorter_min_length} \ 
+        --min-length {params.virsorter_min_length} \
         --jobs {threads} \
         all
         """
