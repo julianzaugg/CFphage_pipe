@@ -124,6 +124,54 @@ rule nanoplot_filtered:
         """
 
 # ------------------------------------------------------------------------------------------------
+
+rule reads2fasta:
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
+    output:
+        "data/read_fastas/{sample}.fasta"
+    conda:
+        "envs/seqtk.yaml"
+    shell:
+        """
+        mkdir -p data/read_fastas
+        seqk seq -a {input.reads} > {output}
+        """
+
+# ------------------------------------------------------------------------------------------------
+# Run viral tools on reads
+
+rule viral_reads_predict:
+    input:
+        expand("data/viral_reads_predict/{sample}/virsorter/done", sample = SAMPLES),
+    output:
+        temp(touch("finished_viral_reads_predict"))
+
+rule virsorter:
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
+    params:
+        virsorter_database = config["VIRSORTER"]["DATABASE_DIR"]
+    output:
+        touch("data/viral_predict/{sample}/virsorter/done")
+    conda:
+        "envs/virsorter.yaml"
+    threads:
+        config["MAX_THREADS"]
+    shell:
+        """
+        mkdir -p data/viral_reads_predict/{wildcards.sample} && \
+        virsorter run \
+        --rm-tmpdir \
+        --seqfile {input.reads} \
+        --working-dir data/viral_predict/{wildcards.sample}/virsorter \
+        --db-dir {params.virsorter_database} \
+        --min-length {params.virsorter_min_length} \ 
+        --jobs {threads} \
+        all
+        """
+
+# ------------------------------------------------------------------------------------------------
 # Assemble reads
 
 rule assemble:
@@ -183,9 +231,6 @@ rule metaflye:
          cp data/assembly/{wildcards.sample}/metaflye/assembly_graph.gfa \
          data/assembly/{wildcards.sample}/metaflye/{wildcards.sample}.metaflye.gfa
          """
-
-
-
 
 rule canu:
     input:

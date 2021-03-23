@@ -1,4 +1,4 @@
 channels:
   - bioconda
 dependencies:
-  - virsorter = 2.1
+  - seqtk = 1.3

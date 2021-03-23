@@ -30,3 +30,6 @@ REFERENCE_GENOMES_PARAMS:
     COVERM_PARAMS:
         example_ref_genome:
             multiple_genomes: True
+
+VIRSORTER:
+    DATABASE_DIR: /srv/db/virsorter2
