@@ -152,7 +152,8 @@ rule virsorter:
     input:
         reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
     params:
-        virsorter_database = config["VIRSORTER"]["DATABASE_DIR"]
+        virsorter_database = config["VIRSORTER"]["DATABASE_DIR"],
+        virsorter_min_length = config["VIRSORTER"]["MIN_LENGTH"]
     output:
         touch("data/viral_reads_predict/{sample}/virsorter/done")
     conda:
