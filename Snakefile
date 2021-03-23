@@ -50,6 +50,7 @@ SAMPLES = glob.glob(f"{LONG_READ_DIR}**/*.fastq.gz",
 SAMPLES = [sample.replace(f"{LONG_READ_DIR}/","").replace(".fastq.gz","")
            for sample
            in SAMPLES]
+# SAMPLES = glob_wildcards("%s/{id}.fastq.gz".format(LONG_READ_DIR))
 
 # List of reference genome files
 REFERENCE_GENOMES = glob.glob(f"{config['REFERENCE_GENOMES_DIR']}**/*.fasta",
@@ -286,6 +287,7 @@ rule miniasm:
         """
 # ------------------------------------------------------------------------------------------------
 # Polish assemblies
+# TODO - add/replace with HYPO or Nextpolish
 
 rule polish:
     input:
@@ -450,19 +452,39 @@ rule coverage_reference_genomes:
 # ------------------------------------------------------------------------------------------------
 # Assembly evaluation
 
+# CheckM is used to evaluate the quality of the assemblies
 # rule checkm:
+#     input:
+#         assemblies="data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}"
+#     output:
+#         "data/checkm.out"
+#     priority: 1
+#     conda:
+#         "envs/checkm.yaml"
+#     threads:
+#         config["max_threads"]
+#     shell:
+#         'checkm lineage_wf -t {threads} -x fa data/das_tool_bins/das_tool_DASTool_bins data/checkm > data/checkm.out'
+# rule polish:
+#     input:
+#         expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
+#                sample = SAMPLES, assembler = ASSEMBLERS),
+#         "finished_assembly"
+#     output:
+#         temp(touch("finished_polishing"))
 
 # rule gtdbtk:
 
 # ------------------------------------------------------------------------------------------------
 # TODO
 #          checkm, gtdbtk, busco?
+#          Unassembled contigs > polish (viral not making it into assembly)
 #          coverm/to_assembly
-#          kaiju / kraken (profile qc reads)?
+#          kraken / bracken to profile qc reads. Can map to GTDB though slow.
 #          compile read stats
-#          virsorter2 / vibrant (phage identication)
-#          checkv  (identify likely true phage)
-#          fastANI + MCL (dereplication of phage)
+#          a) virsorter2 / vibrant (phage identication)
+#          b) checkv  (identify likely true phage)
+#          c) fastANI + MCL (dereplication of phage)
 #          plasmid identification (PlasFlow/gplas or PlasClass)
 #          log failed assemblies
 #          min contig size for assemblies, 2000bp?
