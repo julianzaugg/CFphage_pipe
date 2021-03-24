@@ -409,8 +409,7 @@ rule viral_assembly_predict:
 
 rule virsorter_assembly:
     input:
-        assembly = expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
-            sample = SAMPLES, assembler = ASSEMBLERS)
+        assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
     params:
         virsorter_database = config["VIRSORTER"]["DATABASE_DIR"],
         virsorter_min_length = config["VIRSORTER"]["MIN_LENGTH"]
