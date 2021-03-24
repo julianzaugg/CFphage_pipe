@@ -148,7 +148,7 @@ rule viral_reads_predict:
     output:
         temp(touch("finished_viral_reads_predict"))
 
-rule virsorter:
+rule virsorter_reads:
     input:
         reads = "data/nanofilt/{sample}_nanofilt.fastq.gz"
     params:
@@ -171,7 +171,7 @@ rule virsorter:
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
         all
-        touch data/viral_reads_predict/{sample}/virsorter/done
+        touch data/viral_reads_predict/{wildcards.sample}/virsorter/done
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ rule canu:
         "data/assembly/{sample}/canu/{sample}.canu.fasta"
     params:
         genome_size = config["GENOME_SIZE"],
-        min_read_length=1000,
+        min_read_length=2000,
         min_overlap_length=500,
         min_input_coverage=0,
         stop_on_low_coverage=0,
@@ -344,6 +344,11 @@ rule polish:
         "finished_assembly"
     output:
         temp(touch("finished_polishing"))
+    # shell:
+    #     """
+    #     mkdir -p data/polished_assemblies && \
+    #     ln -s data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta data/polished_assemblies/{sample}.{assembler}.medaka.fasta
+    #     """
 
 rule racon_polish:
     input:
@@ -388,6 +393,47 @@ rule medaka_polish:
         
         cp data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta \
         data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/{wildcards.sample}.{wildcards.assembler}.medaka.fasta
+        """
+
+# ------------------------------------------------------------------------------------------------
+# Run viral tools on polished assemblies
+
+rule viral_assembly_predict:
+    input:
+        expand("data/viral_assembly_predict/{sample}/{assembler}/virsorter/done",
+            sample = SAMPLES,
+            assembler = ASSEMBLERS),
+        "finished_polishing"
+    output:
+        temp(touch("finished_viral_assembly_predict"))
+
+rule virsorter_assembly:
+    input:
+        assembly = expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
+            sample = SAMPLES, assembler = ASSEMBLERS)
+    params:
+        virsorter_database = config["VIRSORTER"]["DATABASE_DIR"],
+        virsorter_min_length = config["VIRSORTER"]["MIN_LENGTH"]
+    output:
+        "data/viral_assembly_predict/{sample}/{assembler}/virsorter/done"
+    message:
+        "Running virsorter on {input.assembly}"
+    conda:
+        "envs/virsorter.yaml"
+    threads:
+        config["MAX_THREADS"]
+    shell:
+        """
+        mkdir -p data/viral_assembly_predict/{wildcards.sample}/{wildcards.assembler} && \
+        virsorter run \
+        --rm-tmpdir \
+        --seqfile {input.assembly} \
+        --working-dir data/viral_assembly_predict/{wildcards.sample}/{wildcards.assembler}/virsorter \
+        --db-dir {params.virsorter_database} \
+        --min-length {params.virsorter_min_length} \
+        --jobs {threads} \
+        all
+        touch data/viral_assembly_predict/{wildcards.sample}/{wildcards.assembler}/virsorter/done
         """
 
 # ------------------------------------------------------------------------------------------------
