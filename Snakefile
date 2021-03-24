@@ -155,7 +155,7 @@ rule virsorter:
         virsorter_database = config["VIRSORTER"]["DATABASE_DIR"],
         virsorter_min_length = config["VIRSORTER"]["MIN_LENGTH"]
     output:
-        touch("data/viral_reads_predict/{sample}/virsorter/done")
+        "data/viral_reads_predict/{sample}/virsorter/done"
     conda:
         "envs/virsorter.yaml"
     threads:
@@ -166,11 +166,12 @@ rule virsorter:
         virsorter run \
         --rm-tmpdir \
         --seqfile {input.reads} \
-        --working-dir data/viral_predict/{wildcards.sample}/virsorter \
+        --working-dir data/viral_reads_predict/{wildcards.sample}/virsorter \
         --db-dir {params.virsorter_database} \
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
         all
+        touch data/viral_reads_predict/{sample}/virsorter/done
         """
 
 # ------------------------------------------------------------------------------------------------
