@@ -402,7 +402,7 @@ rule medaka_polish:
 
 rule viral_assembly_predict:
     input:
-        expand("data/viral_assembly_predict/{sample}/{assembler}/{viral_predict_tool}/done",
+        expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/done",
             sample = SAMPLES,
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
