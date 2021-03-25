@@ -400,6 +400,16 @@ rule medaka_polish:
 # ------------------------------------------------------------------------------------------------
 # Run viral tools on polished assemblies
 
+rule viral_assembly_predict:
+    input:
+        expand("data/viral_assembly_predict/{sample}/{assembler}/{viral_predict_tool}/done",
+            sample = SAMPLES,
+            assembler = ASSEMBLERS,
+            viral_predict_tool = VIRAL_TOOLS),
+        "data/checkv/done",
+        # "finished_polishing"
+    # output:
+    #     temp(touch("finished_viral_assembly_predict"))
 
 rule virsorter_assembly:
     input:
@@ -408,7 +418,7 @@ rule virsorter_assembly:
         virsorter_database = config["VIRSORTER"]["DATABASE_DIR"],
         virsorter_min_length = config["VIRSORTER"]["MIN_LENGTH"]
     output:
-        "data/viral_assembly_predict/{sample}/{assembler}/virsorter/done"
+        "data/viral_assembly_predict/{sample}/virsorter/{assembler}/done"
     message:
         "Running virsorter on {input.assembly}"
     conda:
@@ -417,9 +427,9 @@ rule virsorter_assembly:
         config["MAX_THREADS"]
     shell:
         """
-        virsorter_sample_assembler_base_path="data/viral_assembly_predict/{wildcards.sample}/{wildcards.assembler}/virsorter"
+        virsorter_sample_assembler_base_path="data/viral_assembly_predict/{wildcards.sample}/virsorter/{wildcards.assembler}"
         
-        mkdir -p data/viral_assembly_predict/{wildcards.sample}/{wildcards.assembler} && \
+        mkdir -p data/viral_assembly_predict/{wildcards.sample}/virsorter/{wildcards.assembler} && \
         virsorter run \
         --rm-tmpdir \
         --seqfile {input.assembly} \
@@ -437,16 +447,16 @@ rule virsorter_assembly:
         else
             touch $virsorter_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
         fi && \
-        touch data/viral_assembly_predict/{wildcards.sample}/{wildcards.assembler}/virsorter/done
+        touch $virsorter_sample_assembler_base_path/done
         """
 
 rule checkv_assembly:
     input:
-        "data/viral_assembly_predict/{sample}/{assembler}/{viral_predict_tool}/{sample}.{assembler}.{viral_predict_tool}.fasta"
+        viral_tool_output = "data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/{sample}.{assembler}.{viral_predict_tool}.fasta"
     output:
         "data/checkv/done"
     message:
-        "Running checkv on {wildcards.sample}/{wildcards.assembly}"
+        "Running checkv on {input.viral_tool_output}"
     params:
         checkv_db = config["CHECKV_DB"]
     conda:
@@ -468,17 +478,6 @@ rule checkv_assembly:
         touch data/checkv/done
         """
 
-
-rule viral_assembly_predict:
-    input:
-        expand("data/viral_assembly_predict/{sample}/{assembler}/{viral_predict_tool}/done",
-            sample = SAMPLES,
-            assembler = ASSEMBLERS,
-            viral_predict_tool = VIRAL_TOOLS),
-        "data/checkv/done",
-        # "finished_polishing"
-    # output:
-    #     temp(touch("finished_viral_assembly_predict"))
 
 # ------------------------------------------------------------------------------------------------
 # Circularise assemblies (if possible)
