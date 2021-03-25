@@ -68,8 +68,9 @@ rule qc:
         expand("data/nanoplot_raw/{sample}/NanoStats.txt", sample = SAMPLES),
         expand("data/nanofilt/{sample}_nanofilt.fastq.gz", sample = SAMPLES),
         expand("data/nanoplot_filtered/{sample}/NanoStats.txt", sample = SAMPLES)
-    output:
-        temp(touch("finished_QC"))
+    # output:
+        # temp(touch("finished_QC"))
+        # touch("finished_QC")
 
 # rule pycoqc:
 #     input:
@@ -145,9 +146,9 @@ rule reads2fasta:
 rule viral_reads_predict:
     input:
         expand("data/viral_reads_predict/{sample}/virsorter/done", sample = SAMPLES),
-        "finished_QC"
-    output:
-        temp(touch("finished_viral_reads_predict"))
+        # "finished_QC"
+    # output:
+        # temp(touch("finished_viral_reads_predict"))
 
 rule virsorter_reads:
     input:
@@ -182,9 +183,9 @@ rule assemble:
     input:
         expand("data/assembly/{sample}/{assembler}/{sample}.{assembler}.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS),
-        "finished_QC"
-    output:
-        temp(touch("finished_assembly"))
+        # "finished_QC"
+    # output:
+    #     temp(touch("finished_assembly"))
 
 rule flye:
     input:
@@ -342,9 +343,9 @@ rule polish:
     input:
         expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS),
-        "finished_assembly"
-    output:
-        temp(touch("finished_polishing"))
+        # "finished_assembly"
+    # output:
+    #     temp(touch("finished_polishing"))
     # shell:
     #     """
     #     mkdir -p data/polished_assemblies && \
@@ -475,9 +476,9 @@ rule viral_assembly_predict:
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
         "data/checkv/done",
-        "finished_polishing"
-    output:
-        temp(touch("finished_viral_assembly_predict"))
+        # "finished_polishing"
+    # output:
+    #     temp(touch("finished_viral_assembly_predict"))
 
 # ------------------------------------------------------------------------------------------------
 # Circularise assemblies (if possible)
