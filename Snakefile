@@ -450,13 +450,21 @@ rule virsorter_assembly:
         touch $virsorter_sample_assembler_base_path/done
         """
 
+def collect_viral_outputs(wildcards):
+    files = expand("data/viral_assembly_predict/{sample}/{assembler}/{viral_predict_tool}/"
+                   "{sample}.{assembler}.{viral_predict_tool}.fasta",
+        sample = SAMPLES,
+        assembler = ASSEMBLERS,
+        viral_predict_tool = VIRAL_TOOLS)
+    return files
+
 rule checkv_assembly:
     input:
-        viral_tool_output = "data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/{sample}.{assembler}.{viral_predict_tool}.fasta"
+        viral_tool_output = collect_viral_outputs
     output:
         "data/checkv/done"
     message:
-        "Running checkv on {input.viral_tool_output}"
+        "Running checkv"
     params:
         checkv_db = config["CHECKV_DB"]
     conda:
@@ -466,7 +474,7 @@ rule checkv_assembly:
     shell:
         """
         mkdir -p data/checkv
-        cat data/viral_assembly_predict/{wildcards.sample}/{wildcards.assembler}/{wildcards.viral_predict_tool}/{wildcards.sample}.{wildcards.assembler}.{wildcards.viral_predict_tool}.fasta \
+        cat {input.viral_tool_output} \
         > data/checkv/all_samples_viral_sequences.fasta
         
         checkv end_to_end \
