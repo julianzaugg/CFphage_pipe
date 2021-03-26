@@ -127,7 +127,7 @@ rule filter_reads_reference:
     conda:
         "envs/coverm.yaml"
     threads:
-         config["max_threads"]
+         config["MAX_THREADS"]
     shell:
         """
         mkdir -p data/reference_filtered_reads && \
