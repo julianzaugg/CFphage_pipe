@@ -112,6 +112,21 @@ rule nanofilt:
         gzip > data/nanofilt/{wildcards.sample}_nanofilt.fastq.gz
         """
 
+# rule map_reads_ref:
+#     input:
+#         reads = "data/nanofilt/{sample}_nanofilt.fastq.gz",
+#         reference_filter= config["REFERENCE_FILTER"]
+#     output:
+#         "data/reference_filtered_reads/{sample}.bam"
+#     conda:
+#         "envs/minimap2.yaml"
+#     threads:
+#          config["max_threads"]
+#     shell:
+#         """
+#         minimap2 -ax map-ont -t {threads} {input.reference_filter} {input.fastq} | samtools view -b  > {output}
+#         """
+
 rule nanoplot_filtered:
     input:
          reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz"
@@ -437,17 +452,15 @@ rule virsorter_assembly:
         --db-dir {params.virsorter_database} \
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
-        all
+        all && \
+        touch $virsorter_sample_assembler_base_path/done
         
         if [[ -f $virsorter_sample_assembler_base_path/final-viral-combined.fa ]]; then
-            cp $virsorter_sample_assembler_base_path/virsorter/final-viral-combined.fa \
+            cp $virsorter_sample_assembler_base_path/final-viral-combined.fa \
             $virsorter_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
             sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__virsorter____/g" \
             $virsorter_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
-        else
-            touch $virsorter_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
-        fi && \
-        touch $virsorter_sample_assembler_base_path/done
+        fi 
         """
 
 def collect_viral_outputs(wildcards):
@@ -456,6 +469,7 @@ def collect_viral_outputs(wildcards):
         sample = SAMPLES,
         assembler = ASSEMBLERS,
         viral_predict_tool = VIRAL_TOOLS)
+    files = [file for file in files if os.path.isfile(file)]
     return files
 
 rule checkv_assembly:
