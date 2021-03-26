@@ -27,6 +27,9 @@ MAX_THREADS:
     8
 MAX_MEMORY:
     100
+REFERENCE_FILTER:
+    /srv/projects/CF_phage/data/reference_genomes/GCF_000006765.1.fasta
+
 REFERENCE_GENOMES_DIR:
     test_data/reference_genomes
 

@@ -1,5 +1,5 @@
 channels:
   - bioconda
 dependencies:
-  - coverm >= 0.5
+  - coverm = 0.6.1
   - parallel

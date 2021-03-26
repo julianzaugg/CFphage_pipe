@@ -72,14 +72,6 @@ rule qc:
         # temp(touch("finished_QC"))
         # touch("finished_QC")
 
-# rule pycoqc:
-#     input:
-#         guppy_summary = config["guppy_summary_file"]
-#     output:
-#         "data/pycoqc/{sample}_read_qc.html"
-#     conda:
-#         "envs/pycoqc.yaml"
-
 rule nanoplot_raw:
     input:
          reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz"
@@ -112,21 +104,6 @@ rule nanofilt:
         gzip > data/nanofilt/{wildcards.sample}_nanofilt.fastq.gz
         """
 
-# rule map_reads_ref:
-#     input:
-#         reads = "data/nanofilt/{sample}_nanofilt.fastq.gz",
-#         reference_filter= config["REFERENCE_FILTER"]
-#     output:
-#         "data/reference_filtered_reads/{sample}.bam"
-#     conda:
-#         "envs/minimap2.yaml"
-#     threads:
-#          config["max_threads"]
-#     shell:
-#         """
-#         minimap2 -ax map-ont -t {threads} {input.reference_filter} {input.fastq} | samtools view -b  > {output}
-#         """
-
 rule nanoplot_filtered:
     input:
          reads = config["LONG_READ_DIR"] + "/{sample}.fastq.gz"
@@ -138,6 +115,24 @@ rule nanoplot_filtered:
         """
         mkdir -p data/nanoplot_filtered/{wildcards.sample}
         NanoPlot -o data/nanoplot_filtered/{wildcards.sample} --fastq {input.reads}
+        """
+
+# Filter reads against a reference
+rule filter_reads_reference:
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz",
+        reference_filter = config["REFERENCE_FILTER"]
+    output:
+        "data/reference_filtered_reads/{sample}_RF.fastq.gz"
+    conda:
+        "envs/coverm.yaml"
+    threads:
+         config["max_threads"]
+    shell:
+        """
+        mkdir -p data/reference_filtered_reads && \
+        minimap2 -ax map-ont -t {threads} {input.reference_filter} {input.reads} | samtools fastq -n -f 4 - \
+        > {output}
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -499,6 +494,14 @@ rule checkv_assembly:
         data/checkv/ && \
         touch data/checkv/done
         """
+
+# Extract high quality viruses from checkv
+# Contig names:
+# awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{print $1}' quality_summary.tsv
+# cat ()
+
+# ------------------------------------------------------------------------------------------------
+# FastANI and clustering of viral sequences
 
 
 # ------------------------------------------------------------------------------------------------
