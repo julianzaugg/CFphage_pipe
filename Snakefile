@@ -466,7 +466,8 @@ rule checkv_assembly:
     input:
         viral_tool_output = collect_viral_outputs
     output:
-        "data/checkv/checkv_selected.fasta"
+        checkv_selected = "data/checkv/checkv_selected.fasta",
+        done = "data/checkv/done"
     message:
         "Running checkv"
     params:
@@ -478,6 +479,8 @@ rule checkv_assembly:
     shell:
         """
         mkdir -p data/checkv
+        rm data/checkv/checkv_selected.fasta
+        
         cat {input.viral_tool_output} \
         > data/checkv/all_samples_viral_sequences.fasta
         
@@ -491,11 +494,11 @@ rule checkv_assembly:
         # Combine viruses.fna and proviruses.fna, assume they exist
         cat data/checkv/viruses.fna data/checkv/proviruses.fna > data/checkv/checkv_all.fasta
         
-        # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file
-        rm data/checkv/checkv_selected.fasta 
+        # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file 
         while read contig; do
-        grep -h $contig data/checkv/checkv_all.fasta -A 1 >> data/checkv/checkv_selected.fasta
+        grep -h $contig data/checkv/checkv_all.fasta -A 1 >> {output.checkv_selected}
         done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv/quality_summary.tsv)
+        touch {output.done}
         """
 
 rule viral_cluster:
@@ -528,7 +531,8 @@ rule fastani_average:
     input:
         "data/viral_clustering/fastani/fastani_viral.tsv"
     output:
-        "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv"
+        fastani_viral_ani95_mcl = "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv",
+        done = "data/viral_clustering/fastani/done"
     conda:
         "envs/fastani_average.yaml"
     shell:
@@ -536,13 +540,15 @@ rule fastani_average:
         Rscript --vanilla scripts/fastani_average.R {input} \
         data/viral_clustering/fastani/fastani_viral_mean.tsv \
         {output}
+        touch {output.done}
         """
 
 rule mcl:
     input:
         "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv"
     output:
-        "data/viral_clustering/mcl/mcl_viral_clusters.tsv"
+        mcl_viral_clusters = "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
+        done = "data/viral_clustering/mcl/done"
     params:
         inflation_factor = 3.5
     conda:
@@ -550,13 +556,16 @@ rule mcl:
     shell:
         """
         BASE_DIR="data/viral_clustering/mcl"
+        mkdir -p $BASE_DIR
         
         cd $BASE_DIR
         mcxload -abc $1 --stream-mirror -write-tab viral.tab -o viral.mci
         mcl viral.mci -I {params.inflation_factor}
         mcxdump -icl out.viral.mci.I -tabr viral.tab -o dump.viral.mci.I
 
-        sed 's/\t/,/g' dump.viral.mci.I | cat -n | sed -e 's/^[ \t]*//' | sed 's/^/cluster_/g' > {output}
+        sed 's/\t/,/g' dump.viral.mci.I | cat -n | sed -e 's/^[ \t]*//' | sed 's/^/cluster_/g' \
+        > {output.mcl_viral_clusters}
+        touch {output.done}
         """
 
 # ------------------------------------------------------------------------------------------------
