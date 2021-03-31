@@ -410,7 +410,7 @@ rule viral_assembly_predict:
             sample = SAMPLES,
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
-        "data/checkv/checkv_selected.fasta",
+        "data/checkv/done",
         "finished_polishing"
     output:
         touch("finished_viral_assembly_predict")
