@@ -500,7 +500,7 @@ rule checkv_assembly:
 
 rule viral_cluster:
     input:
-        "data/viral_fastani/fastani_viral.tsv",
+        "data/viral_clustering/fastani/fastani_viral.tsv",
         "data/viral_clustering/mcl/mcl_viral_clusters.tsv"
     output:
         touch("finished_viral_clustering")
