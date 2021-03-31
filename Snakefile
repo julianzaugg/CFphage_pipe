@@ -479,7 +479,9 @@ rule checkv_assembly:
     shell:
         """
         mkdir -p data/checkv
-        rm data/checkv/checkv_selected.fasta
+        if [[ -f {output.checkv_selected} ]];then
+            rm data/checkv/checkv_selected.fasta
+        fi
         
         cat {input.viral_tool_output} \
         > data/checkv/all_samples_viral_sequences.fasta
