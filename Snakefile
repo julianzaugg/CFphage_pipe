@@ -68,9 +68,8 @@ rule qc:
         expand("data/nanoplot_raw/{sample}/NanoStats.txt", sample = SAMPLES),
         expand("data/nanofilt/{sample}_nanofilt.fastq.gz", sample = SAMPLES),
         expand("data/nanoplot_filtered/{sample}/NanoStats.txt", sample = SAMPLES)
-    # output:
-        # temp(touch("finished_QC"))
-        # touch("finished_QC")
+    output:
+        touch("finished_QC")
 
 rule nanoplot_raw:
     input:
@@ -156,9 +155,9 @@ rule reads2fasta:
 rule viral_reads_predict:
     input:
         expand("data/viral_reads_predict/{sample}/virsorter/done", sample = SAMPLES),
-        # "finished_QC"
-    # output:
-        # temp(touch("finished_viral_reads_predict"))
+        "finished_QC"
+    output:
+        touch("finished_viral_reads_predict")
 
 rule virsorter_reads:
     input:
@@ -193,9 +192,9 @@ rule assemble:
     input:
         expand("data/assembly/{sample}/{assembler}/{sample}.{assembler}.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS),
-        # "finished_QC"
-    # output:
-    #     temp(touch("finished_assembly"))
+        "finished_QC"
+    output:
+        touch("finished_assembly")
 
 rule flye:
     input:
@@ -353,14 +352,9 @@ rule polish:
     input:
         expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
                sample = SAMPLES, assembler = ASSEMBLERS),
-        # "finished_assembly"
-    # output:
-    #     temp(touch("finished_polishing"))
-    # shell:
-    #     """
-    #     mkdir -p data/polished_assemblies && \
-    #     ln -s data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta data/polished_assemblies/{sample}.{assembler}.medaka.fasta
-    #     """
+        "finished_assembly"
+    output:
+        touch("finished_polishing")
 
 rule racon_polish:
     input:
@@ -416,10 +410,10 @@ rule viral_assembly_predict:
             sample = SAMPLES,
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
-        "data/checkv/done",
-        # "finished_polishing"
-    # output:
-    #     temp(touch("finished_viral_assembly_predict"))
+        "data/checkv/checkv_selected.fasta",
+        "finished_polishing"
+    output:
+        touch("finished_viral_assembly_predict")
 
 rule virsorter_assembly:
     input:
@@ -459,19 +453,20 @@ rule virsorter_assembly:
         """
 
 def collect_viral_outputs(wildcards):
-    files = expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/"
-                   "{sample}.{assembler}.{viral_predict_tool}.fasta",
+    files = expand("data/viral_assembly_predict/{wildcards.sample}/{viral_predict_tool}/{wildcards.assembler}/"
+                   "{wildcards.sample}.{wildcards.assembler}.{wildcards.viral_predict_tool}.fasta",
         sample = SAMPLES,
         assembler = ASSEMBLERS,
         viral_predict_tool = VIRAL_TOOLS)
     files = [file for file in files if os.path.isfile(file)]
     return files
 
+# Run checkV on predicted viral sequences
 rule checkv_assembly:
     input:
         viral_tool_output = collect_viral_outputs
     output:
-        "data/checkv/done"
+        "data/checkv/checkv_selected.fasta"
     message:
         "Running checkv"
     params:
@@ -491,18 +486,78 @@ rule checkv_assembly:
         -t {threads} \
         --restart \
         data/checkv/all_samples_viral_sequences.fasta \
-        data/checkv/ && \
-        touch data/checkv/done
+        data/checkv/
+        
+        # Combine viruses.fna and proviruses.fna, assume they exist
+        cat data/checkv/viruses.fna data/checkv/proviruses.fna > data/checkv/checkv_all.fasta
+        
+        # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file
+        rm data/checkv/checkv_selected.fasta 
+        while read contig; do
+        grep -h $contig data/checkv/checkv_all.fasta -A 1 >> data/checkv/checkv_selected.fasta
+        done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv/quality_summary.tsv)
         """
 
-# Extract high quality viruses from checkv
-# Contig names:
-# awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{print $1}' quality_summary.tsv
-# cat ()
+rule viral_cluster:
+    input:
+        "data/viral_fastani/fastani_viral.tsv",
+        "data/viral_clustering/mcl/mcl_viral_clusters.tsv"
+    output:
+        touch("finished_viral_clustering")
 
-# ------------------------------------------------------------------------------------------------
-# FastANI and clustering of viral sequences
+# Run FastANI on selected viral sequences
+rule fastani_viral:
+    input:
+        checkv_selected = "data/checkv/checkv_selected.fasta"
+    output:
+        "data/viral_clustering/fastani/fastani_viral.tsv"
+    message:
+        "Clustering selected viral sequences"
+    conda:
+        "envs/fastani.yaml"
+    params:
+        frag_len = 600,
+        min_fraction = 0.85
+    threads:
+        config["MAX_THREADS"]
+    script:
+        "scripts/viral_fastani.py"
 
+# Takes the raw output from FastANI and calculates average for each bidirectional pair of genomes
+rule fastani_average:
+    input:
+        "data/viral_clustering/fastani/fastani_viral.tsv"
+    output:
+        "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv"
+    conda:
+        "envs/fastani_average.yaml"
+    shell:
+        """
+        Rscript --vanilla scripts/fastani_average.R {input} \
+        data/viral_clustering/fastani/fastani_viral_mean.tsv \
+        {output}
+        """
+
+rule mcl:
+    input:
+        "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv"
+    output:
+        "data/viral_clustering/mcl/mcl_viral_clusters.tsv"
+    params:
+        inflation_factor = 3.5
+    conda:
+        "envs/mcl.yaml"
+    shell:
+        """
+        BASE_DIR="data/viral_clustering/mcl"
+        
+        cd $BASE_DIR
+        mcxload -abc $1 --stream-mirror -write-tab viral.tab -o viral.mci
+        mcl viral.mci -I {params.inflation_factor}
+        mcxdump -icl out.viral.mci.I -tabr viral.tab -o dump.viral.mci.I
+
+        sed 's/\t/,/g' dump.viral.mci.I | cat -n | sed -e 's/^[ \t]*//' | sed 's/^/cluster_/g' > {output}
+        """
 
 # ------------------------------------------------------------------------------------------------
 # Circularise assemblies (if possible)
