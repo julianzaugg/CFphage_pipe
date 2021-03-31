@@ -541,7 +541,7 @@ rule fastani_average:
         """
         Rscript --vanilla scripts/fastani_average.R {input} \
         data/viral_clustering/fastani/fastani_viral_mean.tsv \
-        {output}
+        {output.fastani_viral_ani95_mcl}
         touch {output.done}
         """
 
