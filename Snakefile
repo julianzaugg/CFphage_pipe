@@ -539,7 +539,7 @@ rule fastani_average:
         "envs/fastani_average.yaml"
     shell:
         """
-        Rscript --vanilla scripts/fastani_average.R {input} \
+        Rscript --vanilla scripts/fastani_avg.R {input} \
         data/viral_clustering/fastani/fastani_viral_mean.tsv \
         {output.fastani_viral_ani95_mcl}
         touch {output.done}
