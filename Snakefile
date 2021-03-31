@@ -453,8 +453,8 @@ rule virsorter_assembly:
         """
 
 def collect_viral_outputs(wildcards):
-    files = expand("data/viral_assembly_predict/{wildcards.sample}/{viral_predict_tool}/{wildcards.assembler}/"
-                   "{wildcards.sample}.{wildcards.assembler}.{wildcards.viral_predict_tool}.fasta",
+    files = expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/"
+                   "{sample}.{assembler}.{viral_predict_tool}.fasta",
         sample = SAMPLES,
         assembler = ASSEMBLERS,
         viral_predict_tool = VIRAL_TOOLS)
