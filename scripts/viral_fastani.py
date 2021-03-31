@@ -10,7 +10,7 @@ fastani_out_dir = "data/viral_clustering/fastani"
 
 
 try:
-    os.makedirs(out_dir)
+    os.makedirs(split_input_dir)
 except FileExistsError:
     pass
 
