@@ -415,6 +415,7 @@ rule viral_assembly_predict:
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
         "data/checkv/done",
+        "data/viral_clustering/mcl/cluster_representative_sequences/done",
         "finished_polishing"
     output:
         touch("finished_viral_assembly_predict")
@@ -567,12 +568,47 @@ rule mcl:
         mkdir -p $BASE_DIR
         
         mcxload -abc {input} --stream-mirror -write-tab $BASE_DIR/viral.tab -o $BASE_DIR/viral.mci
-        mcl $BASE_DIR/viral.mci -I {params.inflation_factor}
+        mcl $BASE_DIR/viral.mci -I {params.inflation_factor} -o $BASE_DIR/out.viral.mci.I
         mcxdump -icl $BASE_DIR/out.viral.mci.I -tabr $BASE_DIR/viral.tab -o $BASE_DIR/dump.viral.mci.I
 
         sed 's/\t/,/g' $BASE_DIR/dump.viral.mci.I | cat -n | sed -e 's/^[ \t]*//' | sed 's/^/cluster_/g' \
         > {output.mcl_viral_clusters}
         touch {output.done}
+        """
+
+rule get_cluster_representatives:
+    input:
+        mcl_viral_clusters = "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
+    output:
+        touch("data/viral_clustering/mcl/cluster_representative_sequences/done")
+    shell:
+        """
+        if [[ -f data/viral_clustering/mcl/clusters_all_members_lengths.tsv ]];then
+            rm data/viral_clustering/mcl/clusters_all_members_lengths.tsv
+        fi
+        while read cluster_info; do
+            cluster=$(echo "$cluster_info" | awk -F "\t" '{{print $1}}')
+            cluster_members=$(echo "$cluster_info" | awk -F "\t" '{{print $2}}')
+            while read member;do
+                member_length=$(cat "${member}.fasta" | tail -n +2 | wc -c)
+                echo -e "${cluster}\t${member}\t${member_length}" \
+                >> data/viral_clustering/mcl/clusters_all_members_lengths.tsv
+            done < <(echo $cluster_members | sed "s/\,/\n/g")
+        done < mcl_viral_clusters.tsv
+        
+        cat data/viral_clustering/mcl/clusters_all_members_lengths.tsv | sort -k 1,1 -r -k 3,3 \
+        > data/viral_clustering/mcl/temp; mv temp data/viral_clustering/mcl/clusters_all_members_lengths.tsv
+        
+        awk '! a[$1]++' data/viral_clustering/mcl/clusters_all_members_lengths.tsv \
+        > data/viral_clustering/mcl/cluster_representatives_lengths.tsv
+        
+        mkdir -p data/viral_clustering/mcl/cluster_representative_sequences
+        while read rep_entry;do
+            cluster=$(echo $rep_entry | awk -F "\t" '{{print $1}}')
+            member_name=$(echo $rep_entry | awk -F "\t" '{{print $2}}') # Assumes name is full path!!
+            member_filename=${member_name}.fasta
+            cp $member_filename data/viral_clustering/mcl/cluster_representative_sequences/${{cluster}}_rep.fasta
+        done < data/viral_clustering/mcl/cluster_representatives_lengths.tsv
         """
 
 # ------------------------------------------------------------------------------------------------

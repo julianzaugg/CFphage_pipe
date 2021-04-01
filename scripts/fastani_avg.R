@@ -21,7 +21,7 @@ colnames(data) <- c("g1", "g2", "ANI")
 
 
 ## Replace .fasta in columns 1 and 2
-data <- data.frame(lapply(data, function(x) { gsub(".fasta", "", x)}))
+data <- data.frame(lapply(data, function(x) { gsub("\\.fasta", "", x)}))
 
 ## Coerce ANI column to numeric
 data$ANI <- as.numeric(as.character(data$ANI))
