@@ -576,6 +576,7 @@ rule mcl:
         touch {output.done}
         """
 
+# FIXME error in get_cluster_representatives
 rule get_cluster_representatives:
     input:
         mcl_viral_clusters = "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
