@@ -566,12 +566,11 @@ rule mcl:
         BASE_DIR="data/viral_clustering/mcl"
         mkdir -p $BASE_DIR
         
-        cd $BASE_DIR
-        mcxload -abc $1 --stream-mirror -write-tab viral.tab -o viral.mci
-        mcl viral.mci -I {params.inflation_factor}
-        mcxdump -icl out.viral.mci.I -tabr viral.tab -o dump.viral.mci.I
+        mcxload -abc {input} --stream-mirror -write-tab $BASE_DIR/viral.tab -o $BASE_DIR/viral.mci
+        mcl $BASE_DIR/viral.mci -I {params.inflation_factor}
+        mcxdump -icl $BASE_DIR/out.viral.mci.I -tabr $BASE_DIR/viral.tab -o $BASE_DIR/dump.viral.mci.I
 
-        sed 's/\t/,/g' dump.viral.mci.I | cat -n | sed -e 's/^[ \t]*//' | sed 's/^/cluster_/g' \
+        sed 's/\t/,/g' $BASE_DIR/dump.viral.mci.I | cat -n | sed -e 's/^[ \t]*//' | sed 's/^/cluster_/g' \
         > {output.mcl_viral_clusters}
         touch {output.done}
         """
