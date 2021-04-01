@@ -3,6 +3,7 @@ import os
 import re
 import tempfile
 import glob
+import subprocess
 
 import pandas as pd
 
@@ -59,6 +60,8 @@ REFERENCE_GENOMES = glob.glob(f"{config['REFERENCE_GENOMES_DIR']}**/*.fasta",
 REFERENCE_GENOMES = [reference_genome.replace(f"{config['REFERENCE_GENOMES_DIR']}/","").replace(".fasta","")
            for reference_genome
            in REFERENCE_GENOMES]
+
+ABSOLUTE_DATA_PATH = os.getcwd()
 
 # ------------------------------------------------------------------------------------------------
 # Perform read quality control and evaluation
@@ -531,16 +534,17 @@ rule fastani_viral:
 # Takes the raw output from FastANI and calculates average for each bidirectional pair of genomes
 rule fastani_average:
     input:
-        "data/viral_clustering/fastani/fastani_viral.tsv"
+        os.path.join(ABSOLUTE_DATA_PATH, "/data/viral_clustering/fastani/fastani_viral.tsv")
     output:
-        fastani_viral_ani95_mcl = "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv",
+        fastani_viral_mean = os.path.join(ABSOLUTE_DATA_PATH, "data/viral_clustering/fastani/fastani_viral_mean.tsv"),
+        fastani_viral_ani95_mcl = os.path.join(ABSOLUTE_DATA_PATH, "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv"),
         done = "data/viral_clustering/fastani/done"
     conda:
         "envs/fastani_average.yaml"
     shell:
         """
         Rscript --vanilla scripts/fastani_avg.R {input} \
-        data/viral_clustering/fastani/fastani_viral_mean.tsv \
+        {output.fastani_viral_mean} \
         {output.fastani_viral_ani95_mcl}
         touch {output.done}
         """
