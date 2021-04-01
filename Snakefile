@@ -62,6 +62,7 @@ REFERENCE_GENOMES = [reference_genome.replace(f"{config['REFERENCE_GENOMES_DIR']
            in REFERENCE_GENOMES]
 
 ABSOLUTE_DATA_PATH = os.getcwd()
+SNAKE_PATH= workflow.basedir
 
 # ------------------------------------------------------------------------------------------------
 # Perform read quality control and evaluation
@@ -543,7 +544,8 @@ rule fastani_average:
         "envs/fastani_average.yaml"
     shell:
         f"""
-        Rscript --vanilla scripts/fastani_avg.R {ABSOLUTE_DATA_PATH}/{{input}} \
+        Rscript --vanilla {SNAKE_PATH}/scripts/fastani_avg.R \
+        {ABSOLUTE_DATA_PATH}/{{input}} \
         {ABSOLUTE_DATA_PATH}/{{output.fastani_viral_mean}} \
         {ABSOLUTE_DATA_PATH}/{{output.fastani_viral_ani95_mcl}}
         touch {{output.done}}
