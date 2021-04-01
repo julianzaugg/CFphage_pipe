@@ -590,8 +590,8 @@ rule get_cluster_representatives:
             cluster=$(echo "$cluster_info" | awk -F "\t" '{{print $1}}')
             cluster_members=$(echo "$cluster_info" | awk -F "\t" '{{print $2}}')
             while read member;do
-                member_length=$(cat "${member}.fasta" | tail -n +2 | wc -c)
-                echo -e "${cluster}\t${member}\t${member_length}" \
+                member_length=$(cat "${{member}}.fasta" | tail -n +2 | wc -c)
+                echo -e "${{cluster}}\t${{member}}\t${{member_length}}" \
                 >> data/viral_clustering/mcl/clusters_all_members_lengths.tsv
             done < <(echo $cluster_members | sed "s/\,/\n/g")
         done < mcl_viral_clusters.tsv
@@ -606,7 +606,7 @@ rule get_cluster_representatives:
         while read rep_entry;do
             cluster=$(echo $rep_entry | awk -F "\t" '{{print $1}}')
             member_name=$(echo $rep_entry | awk -F "\t" '{{print $2}}') # Assumes name is full path!!
-            member_filename=${member_name}.fasta
+            member_filename=${{member_name}}.fasta
             cp $member_filename data/viral_clustering/mcl/cluster_representative_sequences/${{cluster}}_rep.fasta
         done < data/viral_clustering/mcl/cluster_representatives_lengths.tsv
         """
