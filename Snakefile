@@ -534,19 +534,19 @@ rule fastani_viral:
 # Takes the raw output from FastANI and calculates average for each bidirectional pair of genomes
 rule fastani_average:
     input:
-        os.path.join(ABSOLUTE_DATA_PATH, "/data/viral_clustering/fastani/fastani_viral.tsv")
+        "/data/viral_clustering/fastani/fastani_viral.tsv"
     output:
-        fastani_viral_mean = os.path.join(ABSOLUTE_DATA_PATH, "data/viral_clustering/fastani/fastani_viral_mean.tsv"),
-        fastani_viral_ani95_mcl = os.path.join(ABSOLUTE_DATA_PATH, "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv"),
+        fastani_viral_mean = "data/viral_clustering/fastani/fastani_viral_mean.tsv",
+        fastani_viral_ani95_mcl = "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv",
         done = "data/viral_clustering/fastani/done"
     conda:
         "envs/fastani_average.yaml"
     shell:
-        """
-        Rscript --vanilla scripts/fastani_avg.R {input} \
-        {output.fastani_viral_mean} \
-        {output.fastani_viral_ani95_mcl}
-        touch {output.done}
+        f"""
+        Rscript --vanilla scripts/fastani_avg.R {ABSOLUTE_DATA_PATH}/{{input}} \
+        {ABSOLUTE_DATA_PATH}/{{output.fastani_viral_mean}} \
+        {ABSOLUTE_DATA_PATH}/{{output.fastani_viral_ani95_mcl}}
+        touch {{output.done}}
         """
 
 rule mcl:
