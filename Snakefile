@@ -415,7 +415,6 @@ rule viral_assembly_predict:
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
         "data/checkv/done",
-        "data/viral_clustering/mcl/cluster_representative_sequences/done",
         "finished_polishing"
     output:
         touch("finished_viral_assembly_predict")
@@ -511,7 +510,8 @@ rule checkv_assembly:
 rule viral_cluster:
     input:
         "data/viral_clustering/fastani/fastani_viral.tsv",
-        "data/viral_clustering/mcl/mcl_viral_clusters.tsv"
+        "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
+        "data/viral_clustering/mcl/cluster_representative_sequences/done"
     output:
         touch("finished_viral_clustering")
 
