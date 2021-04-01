@@ -534,7 +534,7 @@ rule fastani_viral:
 # Takes the raw output from FastANI and calculates average for each bidirectional pair of genomes
 rule fastani_average:
     input:
-        "/data/viral_clustering/fastani/fastani_viral.tsv"
+        "data/viral_clustering/fastani/fastani_viral.tsv"
     output:
         fastani_viral_mean = "data/viral_clustering/fastani/fastani_viral_mean.tsv",
         fastani_viral_ani95_mcl = "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv",
