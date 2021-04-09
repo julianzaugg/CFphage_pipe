@@ -576,7 +576,7 @@ rule mcl:
         touch {output.done}
         """
 
-# FIXME error in get_cluster_representatives
+
 rule get_cluster_representatives:
     input:
         mcl_viral_clusters = "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
@@ -598,10 +598,11 @@ rule get_cluster_representatives:
         done < mcl_viral_clusters.tsv
         
         cat data/viral_clustering/mcl/clusters_all_members_lengths.tsv | sort -k 1,1 -r -k 3,3 \
-        > data/viral_clustering/mcl/temp; mv temp data/viral_clustering/mcl/clusters_all_members_lengths.tsv
+        > data/viral_clustering/mcl/temp
+        mv data/viral_clustering/mcl/temp data/viral_clustering/mcl/clusters_all_members_lengths.tsv
         
-        awk '! a[$1]++' data/viral_clustering/mcl/clusters_all_members_lengths.tsv \
-        > data/viral_clustering/mcl/cluster_representatives_lengths.tsv
+        awk '! a[$1]++' data/viral_clustering/mcl/clusters_all_members_lengths.tsv > data/viral_clustering/mcl/temp
+        mv data/viral_clustering/mcl/temp data/viral_clustering/mcl/cluster_representatives_lengths.tsv
         
         mkdir -p data/viral_clustering/mcl/cluster_representative_sequences
         while read rep_entry;do
