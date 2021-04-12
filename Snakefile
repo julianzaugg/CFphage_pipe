@@ -511,7 +511,8 @@ rule viral_cluster:
     input:
         "data/viral_clustering/fastani/fastani_viral.tsv",
         "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
-        "data/viral_clustering/mcl/cluster_representative_sequences/done"
+        "data/viral_clustering/mcl/cluster_representative_sequences/done",
+        "finished_viral_assembly_predict"
     output:
         touch("finished_viral_clustering")
 
