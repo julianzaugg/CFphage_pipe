@@ -325,7 +325,7 @@ rule wtdbg2: # also known as redbean
         """
         mkdir -p data/assembly/{wildcards.sample}/wtdbg2
         wtdbg2 -x ont -g {params.genome_size} -t {threads} -i {input.reads} -f \
-        -o data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2
+        -o data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2 && \
         wtpoa-cns -t {threads} \
         -i data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2.ctg.lay.gz -fo {output} \
         || touch {output}
@@ -453,7 +453,8 @@ rule virsorter_assembly:
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
         all && \
-        touch $virsorter_sample_assembler_base_path/done
+        touch {output}
+        || touch {output}
         
         if [[ -f $virsorter_sample_assembler_base_path/final-viral-combined.fa ]]; then
             cp $virsorter_sample_assembler_base_path/final-viral-combined.fa \
