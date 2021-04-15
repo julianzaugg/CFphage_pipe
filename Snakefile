@@ -150,7 +150,7 @@ rule reads2fasta:
     shell:
         """
         mkdir -p data/read_fastas
-        seqk seq -a {input.reads} > {output}
+        seqtk seq -a {input.reads} > {output}
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -218,11 +218,12 @@ rule flye:
          """
          mkdir -p data/assembly/{wildcards.sample}/flye
          flye --nano-raw {input.reads} -o data/assembly/{wildcards.sample}/flye \
-         -g {params.genome_size} -t {threads} {params.flye_parameters}
+         -g {params.genome_size} -t {threads} {params.flye_parameters} && \
          cp data/assembly/{wildcards.sample}/flye/assembly.fasta \
-         data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.fasta
+         {output} && \
          cp data/assembly/{wildcards.sample}/flye/assembly_graph.gfa \
-         data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.gfa
+         data/assembly/{wildcards.sample}/flye/{wildcards.sample}.flye.gfa \
+         || touch {output}
          """
 
 rule metaflye:
@@ -243,11 +244,12 @@ rule metaflye:
          """
          mkdir -p data/assembly/{wildcards.sample}/metaflye
          flye --meta --nano-raw {input.reads} -o data/assembly/{wildcards.sample}/metaflye \
-         -g {params.genome_size} -t {threads} {params.metaflye_parameters}
+         -g {params.genome_size} -t {threads} {params.metaflye_parameters} && \
          cp data/assembly/{wildcards.sample}/metaflye/assembly.fasta \
-         data/assembly/{wildcards.sample}/metaflye/{wildcards.sample}.metaflye.fasta
+         {output} && \
          cp data/assembly/{wildcards.sample}/metaflye/assembly_graph.gfa \
-         data/assembly/{wildcards.sample}/metaflye/{wildcards.sample}.metaflye.gfa
+         data/assembly/{wildcards.sample}/metaflye/{wildcards.sample}.metaflye.gfa \
+         || touch {output}
          """
 
 rule canu:
@@ -279,7 +281,8 @@ rule canu:
         -minReadLength={params.min_read_length} -minOverlapLength={params.min_overlap_length} \
         -minInputCoverage={params.min_input_coverage} -stopOnLowCoverage={params.stop_on_low_coverage}
         cp data/assembly/{wildcards.sample}/canu/{wildcards.sample}.contigs.fasta \
-        data/assembly/{wildcards.sample}/canu/{wildcards.sample}.canu.fasta
+        {output} \
+        || touch {output}
         """
 
 rule raven:
@@ -301,7 +304,8 @@ rule raven:
         raven \
         --polishing-rounds {params.polishing_rounds} \
         --graphical-fragment-assembly data/assembly/{wildcards.sample}/raven/{wildcards.sample}.raven.gfa \
-        --threads {threads} {input.reads} > {output}
+        --threads {threads} {input.reads} > {output} \
+        || touch {output}
         """
 
 rule wtdbg2: # also known as redbean
@@ -323,7 +327,8 @@ rule wtdbg2: # also known as redbean
         wtdbg2 -x ont -g {params.genome_size} -t {threads} -i {input.reads} -f \
         -o data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2
         wtpoa-cns -t {threads} \
-        -i data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2.ctg.lay.gz -fo {output}
+        -i data/assembly/{wildcards.sample}/wtdbg2/{wildcards.sample}.wtdbg2.ctg.lay.gz -fo {output} \
+        || touch {output}
         """
 
 rule miniasm:
@@ -346,7 +351,9 @@ rule miniasm:
         > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz
         miniasm -f {input.reads} data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.reads.paf.gz \
         > data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.miniasm.gfa
-        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.miniasm.gfa > {output}
+        awk '$1 ~/S/ {{print ">"$2"\\n"$3}}' data/assembly/{wildcards.sample}/miniasm/{wildcards.sample}.miniasm.gfa \
+        > {output} \
+        || touch {output}
         """
 # ------------------------------------------------------------------------------------------------
 # Polish assemblies
@@ -399,10 +406,10 @@ rule medaka_polish:
         """
         mkdir -p data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}
         medaka_consensus -d {input.assembly} -i {input.reads} -t {threads} \
-        -o data/polishing/{wildcards.sample}/medaka/{wildcards.assembler} -m {params.guppy_model}
+        -o data/polishing/{wildcards.sample}/medaka/{wildcards.assembler} -m {params.guppy_model} \
+        || touch data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta
         
-        cp data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta \
-        data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/{wildcards.sample}.{wildcards.assembler}.medaka.fasta
+        cp data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta {output}
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -506,6 +513,9 @@ rule checkv_assembly:
         done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv/quality_summary.tsv)
         touch {output.done}
         """
+
+# ------------------------------------------------------------------------------------------------
+# Cluster and dereplicate viral sequences
 
 rule viral_cluster:
     input:
@@ -613,6 +623,40 @@ rule get_cluster_representatives:
              cp $member_filename data/viral_clustering/mcl/cluster_representative_sequences/${{cluster}}_rep.fasta
          done < data/viral_clustering/mcl/cluster_representatives_lengths.tsv
          """
+# ------------------------------------------------------------------------------------------------
+# Viral annotation
+rule viral_annotate:
+    input:
+        "finished_viral_clustering",
+        "data/viral_annotation/prodigal/done"
+    output:
+        touch("finished_viral_annotation")
+
+# Run prodigal on viruses. Assumes at least one CDS will be present
+rule viral_prodigal:
+    input:
+        input = "data/viral_clustering/mcl/cluster_representative_sequences"
+    output:
+        touch("data/viral_annotation/prodigal/done")
+    message:
+        "Running prodigal on representative viral sequences"
+    params:
+        procedure = "meta"
+    shell:
+        """
+        for rep_sequence_file in $input/cluster_*_rep.fasta; do
+            name=$(basename $rep_sequence_file .fasta)
+            OUTDIR=data/viral_annotation/prodigal/$name
+            mkdir -p $OUTDIR
+            prodigal -i $rep_sequence_file \
+            -a $OUTDIR/$name.faa \
+            -d $OUTDIR/$name.fna \
+            -p {params.procedure} \
+            -f gff \
+            > $OUTDIR/$name.gff        
+        done
+        """
+
 # ------------------------------------------------------------------------------------------------
 # Circularise assemblies (if possible)
 rule circularise:
@@ -748,14 +792,15 @@ rule coverage_reference_genomes:
 
 # ------------------------------------------------------------------------------------------------
 # TODO
+#          Fix handling of failed assembly/polishing
 #          checkm, gtdbtk, busco?
 #          Unassembled contigs > polish (viral not making it into assembly)
 #          coverm/to_assembly
 #          kraken / bracken to profile qc reads. Can map to GTDB though slow.
 #          compile read stats
-#          a) virsorter2 / vibrant (phage identication)
-#          b) checkv  (identify likely true phage)
-#          c) fastANI + MCL (dereplication of phage)
+#          a) virsorter2 / vibrant (phage identication) DONE
+#          b) checkv  (identify likely true phage) DONE
+#          c) fastANI + MCL (dereplication of phage) DONE
 #          plasmid identification (PlasFlow/gplas or PlasClass)
 #          log failed assemblies
 #          min contig size for assemblies, 2000bp?
