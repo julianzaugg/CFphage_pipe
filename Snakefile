@@ -445,6 +445,7 @@ rule virsorter_assembly:
         virsorter_sample_assembler_base_path="data/viral_assembly_predict/{wildcards.sample}/virsorter/{wildcards.assembler}"
         
         mkdir -p data/viral_assembly_predict/{wildcards.sample}/virsorter/{wildcards.assembler} && \
+        if [ -s {input.assembly} ]; then
         virsorter run \
         --rm-tmpdir \
         --seqfile {input.assembly} \
@@ -452,9 +453,9 @@ rule virsorter_assembly:
         --db-dir {params.virsorter_database} \
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
-        all && \
-        touch {output} \
-        || touch {output}
+        all 
+        fi && \
+        touch {output}
         
         if [[ -f $virsorter_sample_assembler_base_path/final-viral-combined.fa ]]; then
             cp $virsorter_sample_assembler_base_path/final-viral-combined.fa \
