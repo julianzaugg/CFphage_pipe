@@ -411,6 +411,64 @@ rule medaka_polish:
         
         cp data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta {output}
         """
+# ------------------------------------------------------------------------------------------------
+# Assembly annotation
+
+rule assembly_annotate:
+    input:
+        expand("data/assembly_annotation/prodigal/{sample}/{assembler}/{sample}.{assembler}.faa",
+        sample = SAMPLES, assembler = ASSEMBLERS),
+        expand("data/assembly_annotation/abricate/{sample}/{assembler}/{sample}.{assembler}.{db}.tsv",
+           sample = SAMPLES, assembler = ASSEMBLERS, db = ["card", "vfdb"]),
+        "finished_polishing"
+    output:
+        touch("finished_assembly_annotation")
+
+# Run prodigal on polished assemblies.
+rule assembly_prodigal:
+    input:
+        assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
+    output:
+        "data/assembly_annotation/prodigal/{sample}/{assembler}/{sample}.{assembler}.faa"
+    message:
+        "Running prodigal on polished assemblies"
+    params:
+        procedure = "meta"
+    conda:
+        "envs/prodigal.yaml"
+    shell:
+        """
+        name=$(basename {input.assembly} .medaka.fasta)
+        OUTDIR=data/assembly_annotation/prodigal/{wildcards.sample}/{wildcards.assembler}
+        mkdir -p $OUTDIR
+        prodigal -i {input.assembly} \
+        -a $OUTDIR/$name.faa \
+        -d $OUTDIR/$name.fna \
+        -p {params.procedure} \
+        -f gff \
+        > $OUTDIR/$name.gff        
+        """
+
+# Run abricate on polished assemblies
+rule assembly_abricate:
+    input:
+        assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
+    output:
+        "data/assembly_annotation/abricate/{sample}/{assembler}/{sample}.{assembler}.faa"
+    conda:
+        "envs/abricate.yaml"
+    message:
+        "Running abricate on polished assemblies"
+    shell:
+        """
+        declare -a databases=("card" "vfdb")
+        ABRICATE_DIR="data/assembly_annotation/abricate/{wildcards.sample}/{wildcards.assembler}"
+        mkdir -p $ABRICATE_DIR
+        for db in "${{databases[@]}}";do
+            abricate -db $db {input.assembly} | sed "s/.medaka.fasta//g" \
+            > $ABRICATE_DIR/{wildcards.sample}.{wildcards.assembler}.${{db}}.tsv
+        done
+        """
 
 # ------------------------------------------------------------------------------------------------
 # Run viral tools on polished assemblies
@@ -629,14 +687,15 @@ rule get_cluster_representatives:
 rule viral_annotate:
     input:
         "finished_viral_clustering",
-        "data/viral_annotation/prodigal/done"
+        "data/viral_annotation/prodigal/done",
+        "data/viral_annotation/abricate/done"
     output:
         touch("finished_viral_annotation")
 
 # Run prodigal on viruses. Assumes at least one CDS will be present
 rule viral_prodigal:
     input:
-        input = "data/viral_clustering/mcl/cluster_representative_sequences"
+        cluster_representative_sequences_base_dir = "data/viral_clustering/mcl/cluster_representative_sequences"
     output:
         touch("data/viral_annotation/prodigal/done")
     message:
@@ -647,7 +706,7 @@ rule viral_prodigal:
         "envs/prodigal.yaml"
     shell:
         """
-        for rep_sequence_file in {input}/cluster_*_rep.fasta; do
+        for rep_sequence_file in {cluster_representative_sequences_base_dir}/cluster_*_rep.fasta; do
             name=$(basename $rep_sequence_file .fasta)
             OUTDIR=data/viral_annotation/prodigal/$name
             mkdir -p $OUTDIR
@@ -657,6 +716,26 @@ rule viral_prodigal:
             -p {params.procedure} \
             -f gff \
             > $OUTDIR/$name.gff        
+        done
+        """
+
+rule viral_abricate:
+    input:
+        cluster_representative_sequences_base_dir = "data/viral_clustering/mcl/cluster_representative_sequences"
+    output:
+        touch("data/viral_annotation/abricate/done")
+    conda:
+        "envs/abricate.yaml"
+    message:
+        "Running abricate on representative viral sequences"
+    shell:
+        """
+        declare -a databases=("card" "vfdb")
+        ABRICATE_DIR="data/viral_annotation/abricate"
+        mkdir -p $ABRICATE_DIR
+        for db in "${{databases[@]}}";do
+            abricate -db $db {input.cluster_representative_sequences_base_dir}/*.fasta | sed "s/.fasta//g" \
+            > $ABRICATE_DIR/viral_abricate_${{db}}.tsv
         done
         """
 
@@ -807,4 +886,8 @@ rule coverage_reference_genomes:
 #          plasmid identification (PlasFlow/gplas or PlasClass)
 #          log failed assemblies
 #          min contig size for assemblies, 2000bp?
+#          assembly annotation : prodigal >
+#              abricate (VFDB, CARD, etc.), amrfinderplus
+#          viral annotation : prodigal >
+#              abricate (VFDB, CARD, etc.), BLAST against img/vr (majority tax)
 
