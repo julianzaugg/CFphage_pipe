@@ -433,7 +433,7 @@ rule virsorter_assembly:
         virsorter_database = config["VIRSORTER"]["DATABASE_DIR"],
         virsorter_min_length = config["VIRSORTER"]["MIN_LENGTH"]
     output:
-        "data/viral_assembly_predict/{sample}/virsorter/{assembler}/done"
+        touch("data/viral_assembly_predict/{sample}/virsorter/{assembler}/done")
     message:
         "Running virsorter on {input.assembly}"
     conda:
@@ -454,8 +454,7 @@ rule virsorter_assembly:
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
         all 
-        fi && \
-        touch {output}
+        fi 
         
         if [[ -f $virsorter_sample_assembler_base_path/final-viral-combined.fa ]]; then
             cp $virsorter_sample_assembler_base_path/final-viral-combined.fa \
