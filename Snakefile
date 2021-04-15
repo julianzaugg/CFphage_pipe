@@ -453,7 +453,7 @@ rule virsorter_assembly:
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
         all && \
-        touch {output}
+        touch {output} \
         || touch {output}
         
         if [[ -f $virsorter_sample_assembler_base_path/final-viral-combined.fa ]]; then
