@@ -643,9 +643,11 @@ rule viral_prodigal:
         "Running prodigal on representative viral sequences"
     params:
         procedure = "meta"
+    conda:
+        "envs/prodigal.yaml"
     shell:
         """
-        for rep_sequence_file in $input/cluster_*_rep.fasta; do
+        for rep_sequence_file in {input}/cluster_*_rep.fasta; do
             name=$(basename $rep_sequence_file .fasta)
             OUTDIR=data/viral_annotation/prodigal/$name
             mkdir -p $OUTDIR
