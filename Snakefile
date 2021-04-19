@@ -9,6 +9,8 @@ import pandas as pd
 
 configfile: "config.yaml"
 
+# TODO instead of rule order, separate handling to a 'run_viral_prediction' rule and 'run_viral_filtering' rules
+ruleorder: virsorter_assembly > checkv
 
 # Get list of samples
 LONG_READ_DIR = config["LONG_READ_DIR"]
@@ -582,6 +584,7 @@ rule viral_cluster:
         "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
         "data/viral_clustering/mcl/cluster_representative_sequences/done",
         "finished_viral_assembly_predict"
+        # dynamic("data/viral_clustering/mcl/cluster_representative_sequences/cluster_{id}_rep.fasta"),
     output:
         touch("finished_viral_clustering")
 
@@ -652,6 +655,7 @@ rule get_cluster_representatives:
         mcl_viral_clusters = "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
     output:
         touch("data/viral_clustering/mcl/cluster_representative_sequences/done")
+        #dynamic("data/viral_clustering/mcl/cluster_representative_sequences/cluster_{id}_rep.fasta")
     shell:
         """
          if [[ -f data/viral_clustering/mcl/clusters_all_members_lengths.tsv ]];then
@@ -695,7 +699,7 @@ rule viral_annotate:
 # Run prodigal on viruses. Assumes at least one CDS will be present
 rule viral_prodigal:
     input:
-        cluster_representative_sequences_base_dir = "data/viral_clustering/mcl/cluster_representative_sequences"
+        "data/viral_clustering/mcl/cluster_representative_sequences/done"
     output:
         touch("data/viral_annotation/prodigal/done")
     message:
@@ -706,7 +710,7 @@ rule viral_prodigal:
         "envs/prodigal.yaml"
     shell:
         """
-        for rep_sequence_file in {cluster_representative_sequences_base_dir}/cluster_*_rep.fasta; do
+        for rep_sequence_file in data/viral_clustering/mcl/cluster_representative_sequences/cluster_*_rep.fasta; do
             name=$(basename $rep_sequence_file .fasta)
             OUTDIR=data/viral_annotation/prodigal/$name
             mkdir -p $OUTDIR
@@ -721,7 +725,7 @@ rule viral_prodigal:
 
 rule viral_abricate:
     input:
-        cluster_representative_sequences_base_dir = "data/viral_clustering/mcl/cluster_representative_sequences"
+        "data/viral_clustering/mcl/cluster_representative_sequences/done"
     output:
         touch("data/viral_annotation/abricate/done")
     conda:
@@ -734,7 +738,7 @@ rule viral_abricate:
         ABRICATE_DIR="data/viral_annotation/abricate"
         mkdir -p $ABRICATE_DIR
         for db in "${{databases[@]}}";do
-            abricate -db $db {input.cluster_representative_sequences_base_dir}/*.fasta | sed "s/.fasta//g" \
+            abricate -db $db data/viral_clustering/mcl/cluster_representative_sequences/*.fasta | sed "s/.fasta//g" \
             > $ABRICATE_DIR/viral_abricate_${{db}}.tsv
         done
         """
