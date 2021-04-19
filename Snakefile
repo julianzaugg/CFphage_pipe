@@ -10,7 +10,7 @@ import pandas as pd
 configfile: "config.yaml"
 
 # TODO instead of rule order, separate handling to a 'run_viral_prediction' rule and 'run_viral_filtering' rules
-ruleorder: virsorter_assembly > checkv
+ruleorder: virsorter_assembly > checkv_assembly
 
 # Get list of samples
 LONG_READ_DIR = config["LONG_READ_DIR"]
