@@ -1,6 +1,16 @@
 # ------------------------------------------------------------------------------------------------
 # Assembly annotation
 
+rule assembly_annotate:
+    input:
+        expand("data/assembly_annotation/prodigal/{sample}/{assembler}/{sample}.{assembler}.faa",
+        sample = SAMPLES, assembler = ASSEMBLERS),
+        expand("data/assembly_annotation/abricate/{sample}/{assembler}/{sample}.{assembler}.{db}.tsv",
+           sample = SAMPLES, assembler = ASSEMBLERS, db = ["card", "vfdb"]),
+        "finished_polishing"
+    output:
+        touch("finished_assembly_annotation")
+
 
 # Run prodigal on polished assemblies.
 rule assembly_prodigal:

@@ -1,6 +1,13 @@
 
 # ------------------------------------------------------------------------------------------------
 # Perform read quality control and evaluation
+rule qc:
+    input:
+        expand("data/nanoplot_raw/{sample}/NanoStats.txt", sample = SAMPLES),
+        expand("data/nanofilt/{sample}_nanofilt.fastq.gz", sample = SAMPLES),
+        expand("data/nanoplot_filtered/{sample}/NanoStats.txt", sample = SAMPLES)
+    output:
+        touch("finished_QC")
 
 
 rule nanoplot_raw:
