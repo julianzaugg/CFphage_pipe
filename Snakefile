@@ -65,34 +65,11 @@ REFERENCE_GENOMES = [reference_genome.replace(f"{config['REFERENCE_GENOMES_DIR']
 ABSOLUTE_DATA_PATH = os.getcwd()
 SNAKE_PATH= workflow.basedir
 
-module qc:
-    snakefile: "rules/qc.smk"
-    config: config
-
-module assemble:
-    snakefile: "rules/assemble.smk"
-    config: config
-
-module assembly_annotate:
-    snakefile: "rules/assembly_annotate.smk"
-    config: config
-
-
-module viral_predict:
-    snakefile: "rules/viral_predict.smk"
-    config: config
-
-module utils:
-    snakefile: "rules/utils.smk"
-    config: config
-
-
-use rule * from qc as *
-use rule * from assembly as *
-use rule * from assembly_annotate as *
-use rule * from viral_predict as *
-use rule * from utils as *
-
+include: "rules/qc.smk"
+include: "rules/assemble.smk"
+include: "rules/assembly_annotate.smk"
+include: "rules/viral_predict.smk"
+include: "rules/utils.smk"
 
 # ------------------------------------------------------------------------------------------------
 # Coverage
