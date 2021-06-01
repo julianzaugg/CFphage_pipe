@@ -137,7 +137,7 @@ rule filter_reads_reference:
         """
         mkdir -p data/reference_filtered_reads && \
         minimap2 -ax map-ont -t {threads} {input.reference_filter} {input.reads} | samtools fastq -n -f 4 - \
-        > {output}
+        | gzip > {output}
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -524,6 +524,9 @@ rule virsorter_assembly:
         fi 
         """
 
+# rule seeker_assembly:
+# rule vibrant_assembly:
+
 def collect_viral_outputs(wildcards):
     files = expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/"
                    "{sample}.{assembler}.{viral_predict_tool}.fasta",
@@ -882,8 +885,9 @@ rule coverage_reference_genomes:
 #          checkm, gtdbtk, busco?
 #          Unassembled contigs > polish (viral not making it into assembly)
 #          coverm/to_assembly
-#          kraken / bracken to profile qc reads. Can map to GTDB though slow.
+#          kraken / bracken (or alterantive) to profile qc reads. Can map to GTDB though slow.
 #          compile read stats
+#          seeker - input needs to be > 200bp
 #          a) virsorter2 / vibrant (phage identication) DONE
 #          b) checkv  (identify likely true phage) DONE
 #          c) fastANI + MCL (dereplication of phage) DONE
