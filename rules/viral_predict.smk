@@ -108,13 +108,13 @@ rule seeker_assembly:
         seeker_sample_assembler_base_path="data/viral_assembly_predict/{wildcards.sample}/seeker/{wildcards.assembler}"
         mkdir -p $seeker_sample_assembler_base_path
         if [ -s {input.assembly} ]; then
-            seqkit seq -m {params.seeker_min_length} {assembly} > $seeker_sample_assembler_base_path/length_filtered.fasta
+            seqkit seq -m {params.seeker_min_length} {input.assembly} > $seeker_sample_assembler_base_path/length_filtered.fasta
             predict-metagenome $seeker_sample_assembler_base_path/length_filtered.fasta \
             > $seeker_sample_assembler_base_path/seeker_scores.tsv
             
             awk -F "\t" '{{if($2=="Phage" && $3 >= 0.5 )print $1 }}' \
-            $$seeker_sample_assembler_base_path/seeker_scores.tsv \
-            | seqkit grep --by-name --pattern-file - $seeker_sample_assembler_base_path/all.fasta \
+            $seeker_sample_assembler_base_path/seeker_scores.tsv \
+            | seqkit grep --by-name --pattern-file - $seeker_sample_assembler_base_path/length_filtered.fasta \
             > $seeker_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
 
             sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
