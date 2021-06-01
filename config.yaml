@@ -38,6 +38,8 @@ REFERENCE_GENOMES_PARAMS:
         example_ref_genome:
             multiple_genomes: True
 
+SEEKER:
+    MIN_LENGTH: 1000
 VIRSORTER:
     DATABASE_DIR: /srv/db/virsorter2
     MIN_LENGTH: 1000

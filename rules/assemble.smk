@@ -197,7 +197,7 @@ rule racon_polish:
         gap = -8,
         window_length = 500
     script:
-        "scripts/racon_polish.py"
+        "../scripts/racon_polish.py"
 
 rule medaka_polish:
     input:
