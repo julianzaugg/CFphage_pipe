@@ -3,13 +3,6 @@
 # ------------------------------------------------------------------------------------------------
 # Assemble reads
 
-rule assemble:
-    input:
-        expand("data/assembly/{sample}/{assembler}/{sample}.{assembler}.fasta",
-               sample = SAMPLES, assembler = ASSEMBLERS),
-        "finished_QC"
-    output:
-        touch("finished_assembly")
 
 rule flye:
     input:

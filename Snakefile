@@ -89,6 +89,40 @@ use rule * from viral_predict as *
 use rule * from utils as *
 
 
+rule qc:
+    input:
+        expand("data/nanoplot_raw/{sample}/NanoStats.txt", sample = SAMPLES),
+        expand("data/nanofilt/{sample}_nanofilt.fastq.gz", sample = SAMPLES),
+        expand("data/nanoplot_filtered/{sample}/NanoStats.txt", sample = SAMPLES)
+    output:
+        touch("finished_QC")
+
+rule assemble:
+    input:
+        expand("data/assembly/{sample}/{assembler}/{sample}.{assembler}.fasta",
+               sample = SAMPLES, assembler = ASSEMBLERS),
+        "finished_QC"
+    output:
+        touch("finished_assembly")
+
+rule viral_annotate:
+    input:
+        "finished_viral_clustering",
+        "data/viral_annotation/prodigal/done",
+        "data/viral_annotation/abricate/done"
+    output:
+        touch("finished_viral_annotation")
+
+
+rule assembly_annotate:
+    input:
+        expand("data/assembly_annotation/prodigal/{sample}/{assembler}/{sample}.{assembler}.faa",
+        sample = SAMPLES, assembler = ASSEMBLERS),
+        expand("data/assembly_annotation/abricate/{sample}/{assembler}/{sample}.{assembler}.{db}.tsv",
+           sample = SAMPLES, assembler = ASSEMBLERS, db = ["card", "vfdb"]),
+        "finished_polishing"
+    output:
+        touch("finished_assembly_annotation")
 
 # ------------------------------------------------------------------------------------------------
 # Coverage

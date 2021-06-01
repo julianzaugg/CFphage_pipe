@@ -258,13 +258,7 @@ rule get_cluster_representatives:
 
 # ------------------------------------------------------------------------------------------------
 # Viral annotation
-rule viral_annotate:
-    input:
-        "finished_viral_clustering",
-        "data/viral_annotation/prodigal/done",
-        "data/viral_annotation/abricate/done"
-    output:
-        touch("finished_viral_annotation")
+
 
 # Run prodigal on viruses. Assumes at least one CDS will be present
 rule viral_prodigal:
