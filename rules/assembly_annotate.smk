@@ -23,7 +23,7 @@ rule assembly_prodigal:
     params:
         procedure = "meta"
     conda:
-        "envs/prodigal.yaml"
+        "../envs/prodigal.yaml"
     shell:
         """
         name=$(basename {input.assembly} .medaka.fasta)
@@ -44,7 +44,7 @@ rule assembly_abricate:
     output:
         "data/assembly_annotation/abricate/{sample}/{assembler}/{sample}.{assembler}.faa"
     conda:
-        "envs/abricate.yaml"
+        "../envs/abricate.yaml"
     message:
         "Running abricate on polished assemblies"
     shell:

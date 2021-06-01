@@ -7,7 +7,7 @@ rule reads2fasta:
     output:
         "data/read_fastas/{sample}.fasta"
     conda:
-        "envs/seqtk.yaml"
+        "../envs/seqtk.yaml"
     shell:
         """
         mkdir -p data/read_fastas

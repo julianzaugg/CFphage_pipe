@@ -20,7 +20,7 @@ rule virsorter_reads:
     output:
         "data/viral_reads_predict/{sample}/virsorter/done"
     conda:
-        "envs/virsorter.yaml"
+        "../envs/virsorter.yaml"
     threads:
         config["MAX_THREADS"]
     shell:
@@ -63,7 +63,7 @@ rule virsorter_assembly:
     message:
         "Running virsorter on {input.assembly}"
     conda:
-        "envs/virsorter.yaml"
+        "../envs/virsorter.yaml"
     threads:
         config["MAX_THREADS"]
     shell:
@@ -114,7 +114,7 @@ rule checkv_assembly:
     params:
         checkv_db = config["CHECKV_DB"]
     conda:
-        "envs/checkv.yaml"
+        "../envs/checkv.yaml"
     threads:
         config["MAX_THREADS"]
     shell:
@@ -166,7 +166,7 @@ rule fastani_viral:
     message:
         "Clustering selected viral sequences"
     conda:
-        "envs/fastani.yaml"
+        "../envs/fastani.yaml"
     params:
         frag_len = 600,
         min_fraction = 0.85
@@ -184,7 +184,7 @@ rule fastani_average:
         fastani_viral_ani95_mcl = "data/viral_clustering/fastani/fastani_viral_ani95_mcl.tsv",
         done = "data/viral_clustering/fastani/done"
     conda:
-        "envs/fastani_average.yaml"
+        "../envs/fastani_average.yaml"
     shell:
         f"""
         Rscript --vanilla {SNAKE_PATH}/scripts/fastani_avg.R \
@@ -203,7 +203,7 @@ rule mcl:
     params:
         inflation_factor = 3.5
     conda:
-        "envs/mcl.yaml"
+        "../envs/mcl.yaml"
     shell:
         """
         BASE_DIR="data/viral_clustering/mcl"
@@ -278,7 +278,7 @@ rule viral_prodigal:
     params:
         procedure = "meta"
     conda:
-        "envs/prodigal.yaml"
+        "../envs/prodigal.yaml"
     shell:
         """
         for rep_sequence_file in data/viral_clustering/mcl/cluster_representative_sequences/cluster_*_rep.fasta; do
@@ -300,7 +300,7 @@ rule viral_abricate:
     output:
         touch("data/viral_annotation/abricate/done")
     conda:
-        "envs/abricate.yaml"
+        "../envs/abricate.yaml"
     message:
         "Running abricate on representative viral sequences"
     shell:

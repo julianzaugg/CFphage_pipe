@@ -17,7 +17,7 @@ rule flye:
     output:
         "data/assembly/{sample}/flye/{sample}.flye.fasta"
     conda:
-         "envs/flye.yaml"
+         "../envs/flye.yaml"
     params:
         genome_size = config["GENOME_SIZE"],
         flye_parameters = config["ASSEMBLER_PARAMS"]["FLYE_PARAMS"]
@@ -43,7 +43,7 @@ rule metaflye:
     output:
         "data/assembly/{sample}/metaflye/{sample}.metaflye.fasta"
     conda:
-         "envs/flye.yaml"
+         "../envs/flye.yaml"
     params:
         genome_size = config["GENOME_SIZE"],
         metaflye_parameters = config["ASSEMBLER_PARAMS"]["METAFLYE_PARAMS"]
@@ -78,7 +78,7 @@ rule canu:
         use_grid="false",
         max_memory=config["MAX_MEMORY"]
     conda:
-         "envs/canu.yaml"
+         "../envs/canu.yaml"
     threads:
         config["MAX_THREADS"]
     message:
@@ -102,7 +102,7 @@ rule raven:
     output:
         "data/assembly/{sample}/raven/{sample}.raven.fasta"
     conda:
-         "envs/raven.yaml"
+         "../envs/raven.yaml"
     params:
         polishing_rounds = config["RACON_ROUNDS"]
     threads:
@@ -125,7 +125,7 @@ rule wtdbg2: # also known as redbean
     output:
         "data/assembly/{sample}/wtdbg2/{sample}.wtdbg2.fasta"
     conda:
-         "envs/wtdbg2.yaml"
+         "../envs/wtdbg2.yaml"
     params:
         genome_size = config["GENOME_SIZE"]
     threads:
@@ -148,7 +148,7 @@ rule miniasm:
     output:
         "data/assembly/{sample}/miniasm/{sample}.miniasm.fasta"
     conda:
-         "envs/miniasm.yaml"
+         "../envs/miniasm.yaml"
     params:
         genome_size = config["GENOME_SIZE"]
     threads:
@@ -185,7 +185,7 @@ rule racon_polish:
     output:
           "data/polishing/{sample}/racon/{assembler}/{sample}.{assembler}.racon.fasta"
     conda:
-         "envs/racon.yaml"
+         "../envs/racon.yaml"
     threads:
         config["MAX_THREADS"]
     message:
@@ -206,7 +206,7 @@ rule medaka_polish:
     output:
           "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
     conda:
-         "envs/medaka.yaml"
+         "../envs/medaka.yaml"
     threads:
         config["MAX_THREADS"]
     message:
@@ -241,7 +241,7 @@ rule circlator:
     threads:
         config["MAX_THREADS"]
     conda:
-        "envs/circlator.yaml"
+        "../envs/circlator.yaml"
     message:
         "Attempting to circularise {input.assembly} with Circlator"
     shell:

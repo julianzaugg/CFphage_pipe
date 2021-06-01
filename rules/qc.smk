@@ -16,7 +16,7 @@ rule nanoplot_raw:
     output:
           "data/nanoplot_raw/{sample}/NanoStats.txt"
     conda:
-         "envs/nanoplot.yaml"
+         "../envs/nanoplot.yaml"
     shell:
         """
         mkdir -p data/nanoplot_raw/{wildcards.sample}
@@ -29,7 +29,7 @@ rule nanofilt:
     output:
         "data/nanofilt/{sample}_nanofilt.fastq.gz"
     conda:
-         "envs/nanofilt.yaml"
+         "../envs/nanofilt.yaml"
     params:
         length = 200,
         headcrop = 25,
@@ -48,7 +48,7 @@ rule nanoplot_filtered:
     output:
           "data/nanoplot_filtered/{sample}/NanoStats.txt"
     conda:
-         "envs/nanoplot.yaml"
+         "../envs/nanoplot.yaml"
     shell:
         """
         mkdir -p data/nanoplot_filtered/{wildcards.sample}
@@ -63,7 +63,7 @@ rule filter_reads_reference:
     output:
         "data/reference_filtered_reads/{sample}_RF.fastq.gz"
     conda:
-        "envs/coverm.yaml"
+        "../envs/coverm.yaml"
     threads:
          config["MAX_THREADS"]
     shell:
