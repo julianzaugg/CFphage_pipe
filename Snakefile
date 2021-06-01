@@ -73,6 +73,11 @@ module assemble:
     snakefile: "rules/assemble.smk"
     config: config
 
+module assembly_annotate:
+    snakefile: "rules/assembly_annotate.smk"
+    config: config
+
+
 module viral_predict:
     snakefile: "rules/viral_predict.smk"
     config: config
