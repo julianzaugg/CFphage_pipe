@@ -215,7 +215,7 @@ rule checkv_assembly:
     shell:
         """
         mkdir -p data/checkv_assembly
-        # if [[ -f {output.checkv_selected} ]];then
+        # if [[ -f data/checkv_assembly/checkv_selected.fasta ]];then
         #     rm data/checkv_assembly/checkv_selected.fasta
         # fi
         
@@ -234,7 +234,7 @@ rule checkv_assembly:
         
         # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file 
         # while read contig; do
-        #     grep -h $contig data/checkv/checkv_all.fasta -A 1 >> {output.checkv_selected}
+        #     grep -h $contig data/checkv/checkv_all.fasta -A 1 >> data/checkv_assembly/checkv_selected.fasta
         # done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv_assembly/quality_summary.tsv)
         """
 
