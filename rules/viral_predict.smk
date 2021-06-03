@@ -258,7 +258,7 @@ rule viral_cluster:
 rule fastani_viral:
     input:
         # checkv_selected = "data/checkv/checkv_selected.fasta"
-        all_viral_sequences = "data/checkv_assembly/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/viral_assembly_predict/all_samples_viral_sequences.fasta"
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
     message:

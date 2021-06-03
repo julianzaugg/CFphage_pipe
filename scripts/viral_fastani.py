@@ -24,7 +24,8 @@ def split_fasta(input_fasta_filename, output_directory):
                 SeqIO.write(s, fh2, format="fasta-2line")
 
 # Split viral FASTA
-split_fasta(snakemake.input.checkv_selected, split_input_dir)
+# split_fasta(snakemake.input.checkv_selected, split_input_dir)
+split_fasta(snakemake.input.all_viral_sequences, split_input_dir)
 
 # Get list of fasta files and write to file
 input_viral_paths = [os.path.abspath(filename) for filename in glob.iglob(f"{split_input_dir}/*.fasta")]
