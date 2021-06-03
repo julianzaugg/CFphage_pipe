@@ -201,7 +201,7 @@ rule collect_viral_sequences_assembly:
 # Run checkV on predicted viral sequences
 rule checkv_assembly:
     input:
-        viral_tool_output = "data/checkv/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/checkv/all_samples_viral_sequences.fasta"
     output:
         touch("data/checkv/done")
         # checkv_selected= "data/checkv/checkv_selected.fasta",
@@ -215,28 +215,28 @@ rule checkv_assembly:
         config["MAX_THREADS"]
     shell:
         """
-        mkdir -p data/checkv
-        if [[ -f {output.checkv_selected} ]];then
-            rm data/checkv/checkv_selected.fasta
-        fi
+        mkdir -p data/checkv_assembly
+        # if [[ -f {output.checkv_selected} ]];then
+        #     rm data/checkv_assembly/checkv_selected.fasta
+        # fi
         
         # cat {input.viral_tool_output} \
-        # > data/checkv/all_samples_viral_sequences.fasta
+        # > data/checkv_assembly/all_samples_viral_sequences.fasta
         
         checkv end_to_end \
         -d {params.checkv_db} \
         -t {threads} \
         --restart \
-        data/checkv/all_samples_viral_sequences.fasta \
-        data/checkv/
+        {input.all_viral_sequences} \
+        data/checkv_assembly/
         
         # Combine viruses.fna and proviruses.fna, assume they exist
-        cat data/checkv/viruses.fna data/checkv/proviruses.fna > data/checkv/checkv_all.fasta
+        cat data/checkv_assembly/viruses.fna data/checkv_assembly/proviruses.fna > data/checkv_assembly/checkv_assembly_all.fasta
         
         # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file 
-        while read contig; do
-            grep -h $contig data/checkv/checkv_all.fasta -A 1 >> {output.checkv_selected}
-        done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv/quality_summary.tsv)
+        # while read contig; do
+        #     grep -h $contig data/checkv/checkv_all.fasta -A 1 >> {output.checkv_selected}
+        # done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv_assembly/quality_summary.tsv)
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -258,7 +258,7 @@ rule viral_cluster:
 rule fastani_viral:
     input:
         # checkv_selected = "data/checkv/checkv_selected.fasta"
-        viral_tool_output = "data/checkv/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/checkv/all_samples_viral_sequences.fasta"
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
     message:
