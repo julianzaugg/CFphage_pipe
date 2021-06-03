@@ -106,17 +106,20 @@ rule seeker_assembly:
         mkdir -p $SEEKER_DIR
         if [ -s {input.assembly} ]; then
             seqkit seq -m {params.seeker_min_length} {input.assembly} > $SEEKER_DIR/length_filtered.fasta
+            
             predict-metagenome $SEEKER_DIR/length_filtered.fasta \
             > $SEEKER_DIR/seeker_scores.tsv
             
-            awk -F "\t" '{{if($2=="Phage" && $3 >= 0.5 )print $1 }}' \
-            $SEEKER_DIR/seeker_scores.tsv \
-            | seqkit grep --by-name --pattern-file - $SEEKER_DIR/length_filtered.fasta \
-            > $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
-
-            if [ -s $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta ]; then
+            if grep -q --max-count 1 "Phage" $SEEKER_DIR/seeker_scores.tsv; then
+                awk -F "\t" '{{if($2=="Phage" && $3 >= 0.5 )print $1 }}' \
+                $SEEKER_DIR/seeker_scores.tsv \
+                | seqkit grep --by-name --pattern-file - $SEEKER_DIR/length_filtered.fasta \
+                > $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+                
                 sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
                 $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+            else
+                touch $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
             fi
         fi
         """
@@ -132,7 +135,7 @@ rule vibrant_assembly:
     conda:
         "../envs/vibrant.yaml"
     message:
-        "Running vobrant on {input.assembly}"
+        "Running vibrant on {input.assembly}"
     threads:
         config["MAX_THREADS"]
     shell:

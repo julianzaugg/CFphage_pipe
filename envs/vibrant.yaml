@@ -3,3 +3,5 @@ channels:
 dependencies:
   - vibrant = 1.2.1
   - seqkit = 0.16.1
+  - python = 3.7.6
+  - numpy = 1.17.0
