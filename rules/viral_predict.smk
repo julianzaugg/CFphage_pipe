@@ -191,17 +191,17 @@ rule collect_viral_sequences_assembly:
     input:
         viral_tool_output = collect_viral_outputs
     output:
-        "data/checkv_assembly/all_samples_viral_sequences.fasta"
+        "data/viral_assembly_predict/all_samples_viral_sequences.fasta"
     shell:
         """        
         cat {input.viral_tool_output} \
-        > data/checkv_assembly/all_samples_viral_sequences.fasta
+        > data/viral_assembly_predict/all_samples_viral_sequences.fasta
         """
 
 # Run checkV on predicted viral sequences
 rule checkv_assembly:
     input:
-        all_viral_sequences = "data/checkv_assembly/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/viral_assembly_predict/all_samples_viral_sequences.fasta"
     output:
         touch("data/checkv_assembly/done")
         # checkv_selected= "data/checkv/checkv_selected.fasta",
