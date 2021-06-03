@@ -1,8 +1,6 @@
+
 # ------------------------------------------------------------------------------------------------
 # Run viral tools on reads
-
-# TODO instead of rule order, separate handling to a 'run_viral_prediction' rule and 'run_viral_filtering' rules
-ruleorder: virsorter_assembly > checkv_assembly
 
 rule viral_reads_predict:
     input:
@@ -47,7 +45,6 @@ rule viral_assembly_predict:
             sample = SAMPLES,
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
-        "data/checkv/done",
         "finished_polishing"
     output:
         touch("finished_viral_assembly_predict")
@@ -164,6 +161,18 @@ rule vibrant_assembly:
         """
 
 
+
+rule viral_assembly_filter:
+    input:
+        expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/done",
+            sample = SAMPLES,
+            assembler = ASSEMBLERS,
+            viral_predict_tool = VIRAL_TOOLS),
+        "data/checkv/done",
+        "finished_viral_assembly_predict"
+    output:
+        touch("finished_viral_assembly_filter")
+
 def collect_viral_outputs(wildcards):
     files = expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/"
                    "{sample}.{assembler}.{viral_predict_tool}.fasta",
@@ -223,7 +232,8 @@ rule viral_cluster:
         "data/viral_clustering/fastani/fastani_viral.tsv",
         "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
         "data/viral_clustering/mcl/cluster_representative_sequences/done",
-        "finished_viral_assembly_predict"
+        "finished_viral_assembly_predict",
+        "finished_viral_assembly_filter"
         # dynamic("data/viral_clustering/mcl/cluster_representative_sequences/cluster_{id}_rep.fasta"),
     output:
         touch("finished_viral_clustering")
