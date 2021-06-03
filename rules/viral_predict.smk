@@ -187,13 +187,24 @@ def collect_viral_outputs(wildcards):
     files = [file for file in files if os.path.isfile(file)]
     return files
 
-# Run checkV on predicted viral sequences
-rule checkv_assembly:
+rule collect_viral_sequences_assembly:
     input:
         viral_tool_output = collect_viral_outputs
     output:
-        checkv_selected = "data/checkv/checkv_selected.fasta",
-        done = "data/checkv/done"
+        "data/checkv/all_samples_viral_sequences.fasta"
+    shell:
+        """        
+        cat {input.viral_tool_output} \
+        > data/checkv/all_samples_viral_sequences.fasta
+        """
+
+# Run checkV on predicted viral sequences
+rule checkv_assembly:
+    input:
+        viral_tool_output = "data/checkv/all_samples_viral_sequences.fasta"
+    output:
+        touch("data/checkv/done")
+        # checkv_selected= "data/checkv/checkv_selected.fasta",
     message:
         "Running checkv"
     params:
@@ -209,8 +220,8 @@ rule checkv_assembly:
             rm data/checkv/checkv_selected.fasta
         fi
         
-        cat {input.viral_tool_output} \
-        > data/checkv/all_samples_viral_sequences.fasta
+        # cat {input.viral_tool_output} \
+        # > data/checkv/all_samples_viral_sequences.fasta
         
         checkv end_to_end \
         -d {params.checkv_db} \
@@ -224,9 +235,8 @@ rule checkv_assembly:
         
         # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file 
         while read contig; do
-        grep -h $contig data/checkv/checkv_all.fasta -A 1 >> {output.checkv_selected}
+            grep -h $contig data/checkv/checkv_all.fasta -A 1 >> {output.checkv_selected}
         done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv/quality_summary.tsv)
-        touch {output.done}
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -247,8 +257,8 @@ rule viral_cluster:
 # TODO dereplicate all putative viruses, not just sequences CheckV says are good
 rule fastani_viral:
     input:
-        checkv_selected = "data/checkv/checkv_selected.fasta"
-        # viral_tool_output= collect_viral_outputs
+        # checkv_selected = "data/checkv/checkv_selected.fasta"
+        viral_tool_output = "data/checkv/all_samples_viral_sequences.fasta"
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
     message:
