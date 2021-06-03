@@ -69,14 +69,15 @@ rule virsorter_assembly:
         
         mkdir -p $VIRSORTER_DIR && \
         if [ -s {input.assembly} ]; then
-        virsorter run \
-        --rm-tmpdir \
-        --seqfile {input.assembly} \
-        --working-dir $VIRSORTER_DIR \
-        --db-dir {params.virsorter_database} \
-        --min-length {params.virsorter_min_length} \
-        --jobs {threads} \
-        all 
+            # --high-confidence-only
+            virsorter run \
+            --rm-tmpdir \
+            --seqfile {input.assembly} \
+            --working-dir $VIRSORTER_DIR \
+            --db-dir {params.virsorter_database} \
+            --min-length {params.virsorter_min_length} \
+            --jobs {threads} \
+            all 
         fi 
         
         if [[ -f $VIRSORTER_DIR/final-viral-combined.fa ]]; then
@@ -87,42 +88,43 @@ rule virsorter_assembly:
         fi 
         """
 
-rule seeker_assembly:
-    input:
-        assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
-    output:
-        touch("data/viral_assembly_predict/{sample}/seeker/{assembler}/done")
-    params:
-        seeker_min_length = config["SEEKER"]["MIN_LENGTH"]
-    conda:
-        "../envs/seeker.yaml"
-    message:
-        "Running seeker on {input.assembly}"
-    threads:
-        config["MAX_THREADS"]
-    shell:
-        """
-        SEEKER_DIR="data/viral_assembly_predict/{wildcards.sample}/seeker/{wildcards.assembler}"
-        mkdir -p $SEEKER_DIR
-        if [ -s {input.assembly} ]; then
-            seqkit seq -m {params.seeker_min_length} {input.assembly} > $SEEKER_DIR/length_filtered.fasta
-            
-            predict-metagenome $SEEKER_DIR/length_filtered.fasta \
-            > $SEEKER_DIR/seeker_scores.tsv
-            
-            if grep -q --max-count 1 "Phage" $SEEKER_DIR/seeker_scores.tsv; then
-                awk -F "\t" '{{if($2=="Phage" && $3 >= 0.5 )print $1 }}' \
-                $SEEKER_DIR/seeker_scores.tsv \
-                | seqkit grep --by-name --pattern-file - $SEEKER_DIR/length_filtered.fasta \
-                > $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
-                
-                sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
-                $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
-            else
-                touch $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
-            fi
-        fi
-        """
+# FIXME remove seeker_assembly? Does not indicate prophage/regions, only single score. Useful for assembly filtered reads
+# rule seeker_assembly:
+#     input:
+#         assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
+#     output:
+#         touch("data/viral_assembly_predict/{sample}/seeker/{assembler}/done")
+#     params:
+#         seeker_min_length = config["SEEKER"]["MIN_LENGTH"]
+#     conda:
+#         "../envs/seeker.yaml"
+#     message:
+#         "Running seeker on {input.assembly}"
+#     threads:
+#         config["MAX_THREADS"]
+#     shell:
+#         """
+#         SEEKER_DIR="data/viral_assembly_predict/{wildcards.sample}/seeker/{wildcards.assembler}"
+#         mkdir -p $SEEKER_DIR
+#         if [ -s {input.assembly} ]; then
+#             seqkit seq -m {params.seeker_min_length} {input.assembly} > $SEEKER_DIR/length_filtered.fasta
+#
+#             predict-metagenome $SEEKER_DIR/length_filtered.fasta \
+#             > $SEEKER_DIR/seeker_scores.tsv
+#
+#             if grep -q --max-count 1 "Phage" $SEEKER_DIR/seeker_scores.tsv; then
+#                 awk -F "\t" '{{if($2=="Phage" && $3 >= 0.5 )print $1 }}' \
+#                 $SEEKER_DIR/seeker_scores.tsv \
+#                 | seqkit grep --by-name --pattern-file - $SEEKER_DIR/length_filtered.fasta \
+#                 > $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+#
+#                 sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
+#                 $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+#             else
+#                 touch $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+#             fi
+#         fi
+#         """
 
 rule vibrant_assembly:
     input:
@@ -153,17 +155,17 @@ rule vibrant_assembly:
             -d {params.vibrant_database} \
             -t {threads}
             
-            cat $VIBRANT_DIR/VIBRANT*/VIBRANT_phages_*/*phages_combined.txt \
-            | seqkit grep --by-name --pattern-file - $VIBRANT_DIR/length_filtered.fasta \
-            > $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+            cp $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna \
+            $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
             
             if [ -s $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta ]; then
-                sed -i "/^>/ s/$/___vibrant/g" $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+                sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__vibrant____/g" \
+                $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
             fi
+
+            rm $VIBRANT_DIR/length_filtered.fasta
         fi
         """
-
-
 
 rule viral_assembly_filter:
     input:
@@ -242,9 +244,11 @@ rule viral_cluster:
         touch("finished_viral_clustering")
 
 # Run FastANI on selected viral sequences
+# TODO dereplicate all putative viruses, not just sequences CheckV says are good
 rule fastani_viral:
     input:
         checkv_selected = "data/checkv/checkv_selected.fasta"
+        # viral_tool_output= collect_viral_outputs
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
     message:
