@@ -204,7 +204,6 @@ rule checkv_assembly:
         all_viral_sequences = "data/viral_assembly_predict/all_samples_viral_sequences.fasta"
     output:
         touch("data/checkv_assembly/done")
-        # checkv_selected= "data/checkv/checkv_selected.fasta",
     message:
         "Running checkv"
     params:
