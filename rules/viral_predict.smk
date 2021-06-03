@@ -249,8 +249,7 @@ rule viral_cluster:
     output:
         touch("finished_viral_clustering")
 
-# Run FastANI on selected viral sequences
-# TODO dereplicate all putative viruses, not just sequences CheckV says are good
+# Run FastANI on viral sequences
 rule fastani_viral:
     input:
         # checkv_selected = "data/checkv/checkv_selected.fasta"
@@ -312,7 +311,7 @@ rule mcl:
         touch {output.done}
         """
 
-
+# TODO output file listing : cluster rep(TRUE/FALSE) seq_name
 rule get_cluster_representatives:
     input:
         mcl_viral_clusters = "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
