@@ -173,7 +173,7 @@ rule viral_assembly_filter:
             sample = SAMPLES,
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS),
-        "data/checkv/done",
+        "data/checkv_assembly/done",
         "finished_viral_assembly_predict"
     output:
         touch("finished_viral_assembly_filter")
@@ -191,19 +191,19 @@ rule collect_viral_sequences_assembly:
     input:
         viral_tool_output = collect_viral_outputs
     output:
-        "data/checkv/all_samples_viral_sequences.fasta"
+        "data/checkv_assembly/all_samples_viral_sequences.fasta"
     shell:
         """        
         cat {input.viral_tool_output} \
-        > data/checkv/all_samples_viral_sequences.fasta
+        > data/checkv_assembly/all_samples_viral_sequences.fasta
         """
 
 # Run checkV on predicted viral sequences
 rule checkv_assembly:
     input:
-        all_viral_sequences = "data/checkv/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/checkv_assembly/all_samples_viral_sequences.fasta"
     output:
-        touch("data/checkv/done")
+        touch("data/checkv_assembly/done")
         # checkv_selected= "data/checkv/checkv_selected.fasta",
     message:
         "Running checkv"
@@ -258,7 +258,7 @@ rule viral_cluster:
 rule fastani_viral:
     input:
         # checkv_selected = "data/checkv/checkv_selected.fasta"
-        all_viral_sequences = "data/checkv/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/checkv_assembly/all_samples_viral_sequences.fasta"
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
     message:
