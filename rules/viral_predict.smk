@@ -219,9 +219,6 @@ rule checkv_assembly:
         #     rm data/checkv_assembly/checkv_selected.fasta
         # fi
         
-        # cat {input.viral_tool_output} \
-        # > data/checkv_assembly/all_samples_viral_sequences.fasta
-        
         checkv end_to_end \
         -d {params.checkv_db} \
         -t {threads} \
