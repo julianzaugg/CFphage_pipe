@@ -38,6 +38,9 @@ REFERENCE_GENOMES_PARAMS:
         example_ref_genome:
             multiple_genomes: True
 
+VIBRANT:
+    MIN_LENGTH: 1000
+    DATABASE_DIR: /srv/db/vibrant/1.2.1/databases
 SEEKER:
     MIN_LENGTH: 1000
 VIRSORTER:

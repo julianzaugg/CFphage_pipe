@@ -68,25 +68,25 @@ rule virsorter_assembly:
         config["MAX_THREADS"]
     shell:
         """
-        virsorter_sample_assembler_base_path="data/viral_assembly_predict/{wildcards.sample}/virsorter/{wildcards.assembler}"
+        VIRSORTER_DIR="data/viral_assembly_predict/{wildcards.sample}/virsorter/{wildcards.assembler}"
         
-        mkdir -p $virsorter_sample_assembler_base_path && \
+        mkdir -p $VIRSORTER_DIR && \
         if [ -s {input.assembly} ]; then
         virsorter run \
         --rm-tmpdir \
         --seqfile {input.assembly} \
-        --working-dir $virsorter_sample_assembler_base_path \
+        --working-dir $VIRSORTER_DIR \
         --db-dir {params.virsorter_database} \
         --min-length {params.virsorter_min_length} \
         --jobs {threads} \
         all 
         fi 
         
-        if [[ -f $virsorter_sample_assembler_base_path/final-viral-combined.fa ]]; then
-            cp $virsorter_sample_assembler_base_path/final-viral-combined.fa \
-            $virsorter_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
+        if [[ -f $VIRSORTER_DIR/final-viral-combined.fa ]]; then
+            cp $VIRSORTER_DIR/final-viral-combined.fa \
+            $VIRSORTER_DIR/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
             sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__virsorter____/g" \
-            $virsorter_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
+            $VIRSORTER_DIR/{wildcards.sample}.{wildcards.assembler}.virsorter.fasta
         fi 
         """
 
@@ -105,24 +105,64 @@ rule seeker_assembly:
         config["MAX_THREADS"]
     shell:
         """
-        seeker_sample_assembler_base_path="data/viral_assembly_predict/{wildcards.sample}/seeker/{wildcards.assembler}"
-        mkdir -p $seeker_sample_assembler_base_path
+        SEEKER_DIR="data/viral_assembly_predict/{wildcards.sample}/seeker/{wildcards.assembler}"
+        mkdir -p $SEEKER_DIR
         if [ -s {input.assembly} ]; then
-            seqkit seq -m {params.seeker_min_length} {input.assembly} > $seeker_sample_assembler_base_path/length_filtered.fasta
-            predict-metagenome $seeker_sample_assembler_base_path/length_filtered.fasta \
-            > $seeker_sample_assembler_base_path/seeker_scores.tsv
+            seqkit seq -m {params.seeker_min_length} {input.assembly} > $SEEKER_DIR/length_filtered.fasta
+            predict-metagenome $SEEKER_DIR/length_filtered.fasta \
+            > $SEEKER_DIR/seeker_scores.tsv
             
             awk -F "\t" '{{if($2=="Phage" && $3 >= 0.5 )print $1 }}' \
-            $seeker_sample_assembler_base_path/seeker_scores.tsv \
-            | seqkit grep --by-name --pattern-file - $seeker_sample_assembler_base_path/length_filtered.fasta \
-            > $seeker_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+            $SEEKER_DIR/seeker_scores.tsv \
+            | seqkit grep --by-name --pattern-file - $SEEKER_DIR/length_filtered.fasta \
+            > $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
 
-            sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
-            $seeker_sample_assembler_base_path/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+            if [ -s $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta ]; then
+                sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
+                $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+            fi
         fi
         """
 
-# rule vibrant_assembly:
+rule vibrant_assembly:
+    input:
+        assembly="data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
+    output:
+        touch("data/viral_assembly_predict/{sample}/vibrant/{assembler}/done")
+    params:
+        vibrant_database = config["VIBRANT"]["DATABASE_DIR"],
+        vibrant_min_length=config["VIBRANT"]["MIN_LENGTH"]
+    conda:
+        "../envs/vibrant.yaml"
+    message:
+        "Running vobrant on {input.assembly}"
+    threads:
+        config["MAX_THREADS"]
+    shell:
+        """
+        VIBRANT_DIR="data/viral_assembly_predict/{wildcards.sample}/vibrant/{wildcards.assembler}"
+        mkdir -p $VIBRANT_DIR
+        
+        if [ -s {input.assembly} ]; then
+            seqkit seq -m {params.vibrant_min_length} {input.assembly} \
+            > $VIBRANT_DIR/length_filtered.fasta
+            
+            VIBRANT_run.py \
+            -i $VIBRANT_DIR/length_filtered.fasta \
+            -folder $VIBRANT_DIR \
+            -d {params.vibrant_database} \
+            -t {threads}
+            
+            cat $VIBRANT_DIR/VIBRANT*/VIBRANT_phages_*/*phages_combined.txt \
+            | seqkit grep --by-name --pattern-file - $VIBRANT_DIR/length_filtered.fasta \
+            > $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+            
+            if [ -s $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta ]; then
+                sed -i "/^>/ s/$/___vibrant/g" $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+            fi
+        fi
+        """
+
 
 def collect_viral_outputs(wildcards):
     files = expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/"
