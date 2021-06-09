@@ -22,8 +22,10 @@ SHORT_READ_DIR = config["SHORT_READ_DIR"]
 
 # Get list of specified assemblers
 ASSEMBLERS = config["ASSEMBLERS"].strip().split(",")
-VIRAL_TOOLS = config["VIRAL_TOOLS"].strip().split(",")
 
+# Get list of specified viral tools
+VIRAL_TOOLS_ASSEMBLY = config["VIRAL_TOOLS"]["ASSEMBLY"].strip().split(",")
+VIRAL_TOOLS_READS = config["VIRAL_TOOLS"]["READS"].strip().split(",")
 
 onsuccess:
     print("Workflow finished, no error")
@@ -68,7 +70,9 @@ SNAKE_PATH= workflow.basedir
 include: "rules/qc.smk"
 include: "rules/assemble.smk"
 include: "rules/assembly_annotate.smk"
-include: "rules/viral_predict.smk"
+include: "rules/viral_assembly_predict.smk"
+include: "rules/viral_reads_predict.smk"
+include: "rules/viral_annotate.smk"
 include: "rules/utils.smk"
 
 # ------------------------------------------------------------------------------------------------

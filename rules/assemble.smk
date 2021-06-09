@@ -1,6 +1,4 @@
 
-
-# ------------------------------------------------------------------------------------------------
 # Assemble reads
 rule assemble:
     input:
@@ -166,6 +164,7 @@ rule miniasm:
         > {output} \
         || touch {output}
         """
+
 # ------------------------------------------------------------------------------------------------
 # Polish assemblies
 # TODO - add/replace with HYPO or Nextpolish
@@ -221,6 +220,28 @@ rule medaka_polish:
         || touch data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta
         
         cp data/polishing/{wildcards.sample}/medaka/{wildcards.assembler}/consensus.fasta {output}
+        """
+
+# ------------------------------------------------
+# Filter reads against assembly
+
+rule filter_reads_assembly:
+    input:
+        reads = "data/nanofilt/{sample}_nanofilt.fastq.gz",
+        assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
+    output:
+        filtered_fastq = "data/assembly_filtered_reads/{sample}_{assembler}_AF.fastq.gz",
+        filtered_fasta = "data/assembly_filtered_reads/{sample}_{assembler}_AF.fasta"
+    conda:
+        "../envs/coverm.yaml"
+    threads:
+         config["MAX_THREADS"]
+    shell:
+        """
+        mkdir -p data/assembly_filtered_reads && \
+        minimap2 -ax map-ont -t {threads} {input.reference_filter} {input.reads} | samtools fastq -n -f 4 - \
+        | gzip > {output.filtered_fastq}
+        sed -n '1~4s/^@/>/p;2~4p' {output.filtered_fastq} > {output.filtered_fastq}
         """
 
 # ------------------------------------------------------------------------------------------------

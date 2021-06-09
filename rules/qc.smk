@@ -72,3 +72,4 @@ rule filter_reads_reference:
         minimap2 -ax map-ont -t {threads} {input.reference_filter} {input.reads} | samtools fastq -n -f 4 - \
         | gzip > {output}
         """
+

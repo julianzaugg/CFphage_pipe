@@ -5,7 +5,10 @@ SHORT_READ_DIR:
 ASSEMBLERS:
     flye
 VIRAL_TOOLS:
-    virsorter
+    ASSEMBLY:
+        virsorter
+    READS:
+        virsorter
 GENOME_SIZE:
     6000000
 ASSEMBLER_PARAMS:
