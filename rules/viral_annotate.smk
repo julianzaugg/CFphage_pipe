@@ -98,11 +98,11 @@ rule checkv:
         -t {threads} \
         --restart \
         {input.all_viral_sequences} \
-        data/checkv/
+        data/viral_annotation/checkv/
 
         # Combine viruses.fna and proviruses.fna, assume they exist
         cat data/viral_annotation/checkv/viruses.fna data/viral_annotation/checkv/proviruses.fna \
-        > data/checkv/checkv_viruses.fasta
+        > data/viral_annotation/checkv/checkv_viruses.fasta
 
         # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file 
         # while read contig; do

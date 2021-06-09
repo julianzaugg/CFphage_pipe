@@ -241,7 +241,7 @@ rule filter_reads_assembly:
         mkdir -p data/assembly_filtered_reads && \
         minimap2 -ax map-ont -t {threads} {input.assembly} {input.reads} | samtools fastq -n -f 4 - \
         | gzip > {output.filtered_fastq}
-        sed -n '1~4s/^@/>/p;2~4p' {output.filtered_fastq} > {output.filtered_fastq}
+        sed -n '1~4s/^@/>/p;2~4p' {output.filtered_fastq} > {output.filtered_fasta}
         """
 
 # ------------------------------------------------------------------------------------------------
