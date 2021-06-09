@@ -43,7 +43,6 @@ rule viral_assembly_filtered_reads_predict:
             sample = SAMPLES,
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS_READS),
-        "data/assembly_filtered_reads/{sample}_{assembler}_AF.fasta",
         "finished_polishing"
     output:
         touch("finished_viral_assembly_filtered_reads_predict")
