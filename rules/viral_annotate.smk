@@ -45,6 +45,7 @@ rule viral_annotate:
 #         > data/viral_predict/assembly/all_samples_assembly_viral_sequences.fasta
 #         """
 
+
 def collect_viral_outputs(wildcards):
     assembly_files = expand("data/viral_predict/assembly/{sample}/{viral_predict_tool}/{assembler}/"
                    "{sample}.{assembler}.{viral_predict_tool}.fasta",
