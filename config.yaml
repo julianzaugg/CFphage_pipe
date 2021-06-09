@@ -4,7 +4,7 @@ SHORT_READ_DIR:
     none
 ASSEMBLERS:
     flye
-VIRAL_TOOLS:
+VIRAL_TOOLS: # commandline example: VIRAL_TOOLS='{"ASSEMBLY": "vibrant,virsorter", "READS":"virsorter,vibrant"}'
     ASSEMBLY:
         virsorter
     READS:
