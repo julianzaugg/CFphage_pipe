@@ -223,11 +223,10 @@ rule get_cluster_representatives:
          done < data/viral_clustering/mcl/cluster_representatives_lengths.tsv
          """
 
-
 # Run prodigal on viruses. Assumes at least one CDS will be present
 rule viral_prodigal:
     input:
-        "data/viral_clustering/mcl/cluster_representative_sequences/done"
+        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
     output:
         touch("data/viral_annotation/prodigal/done")
     message:
@@ -238,22 +237,22 @@ rule viral_prodigal:
         "../envs/prodigal.yaml"
     shell:
         """
-        for rep_sequence_file in data/viral_clustering/mcl/cluster_representative_sequences/cluster_*_rep.fasta; do
-            name=$(basename $rep_sequence_file .fasta)
-            OUTDIR=data/viral_annotation/prodigal/$name
-            mkdir -p $OUTDIR
-            prodigal -i $rep_sequence_file \
-            -a $OUTDIR/$name.faa \
-            -d $OUTDIR/$name.fna \
-            -p {params.procedure} \
-            -f gff \
-            > $OUTDIR/$name.gff        
-        done
+        # for rep_sequence_file in data/viral_clustering/mcl/cluster_representative_sequences/cluster_*_rep.fasta; do
+        name=$(basename {input.all_viral_sequences} .fasta)
+        OUTDIR=data/viral_annotation/prodigal/$name
+        mkdir -p $OUTDIR
+        prodigal -i {input.all_viral_sequences} \
+        -a $OUTDIR/$name.faa \
+        -d $OUTDIR/$name.fna \
+        -p {params.procedure} \
+        -f gff \
+        > $OUTDIR/$name.gff        
+        # done
         """
 
 rule viral_abricate:
     input:
-        "data/viral_clustering/mcl/cluster_representative_sequences/done"
+        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
     output:
         touch("data/viral_annotation/abricate/done")
     conda:
@@ -266,7 +265,7 @@ rule viral_abricate:
         ABRICATE_DIR="data/viral_annotation/abricate"
         mkdir -p $ABRICATE_DIR
         for db in "${{databases[@]}}";do
-            abricate -db $db data/viral_clustering/mcl/cluster_representative_sequences/*.fasta | sed "s/.fasta//g" \
+            abricate -db $db {input.all_viral_sequences} | sed "s/.fasta//g" \
             > $ABRICATE_DIR/viral_abricate_${{db}}.tsv
         done
         """
