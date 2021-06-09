@@ -56,7 +56,7 @@ rule virsorter_assembly_filtered_reads:
     output:
         touch("data/viral_predict/assembly_filtered_reads/{sample}/virsorter/{assembler}/done")
     message:
-        "Running virsorter on {input.assembly}"
+        "Running virsorter on {input.filtered_fasta}"
     conda:
         "../envs/virsorter.yaml"
     threads:
