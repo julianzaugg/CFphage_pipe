@@ -3,9 +3,10 @@
 rule viral_annotate:
     input:
         "finished_viral_clustering",
-        # "finished_viral_assembly_predict",
-        # "finished_viral_assembly_filtered_reads_predict",
+        "finished_viral_assembly_predict",
+        "finished_viral_assembly_filtered_reads_predict",
         "data/viral_predict/all_samples_viral_sequences.fasta",
+        "data/viral_annotation/checkv/done",
         "data/viral_annotation/prodigal/done",
         "data/viral_annotation/abricate/done"
     output:
@@ -75,7 +76,7 @@ rule checkv:
     input:
         all_viral_sequences="data/viral_predict/all_samples_viral_sequences.fasta"
     output:
-        touch("data/checkv/done")
+        touch("data/viral_annotation/checkv/done")
     message:
         "Running checkv"
     params:
@@ -86,9 +87,9 @@ rule checkv:
         config["MAX_THREADS"]
     shell:
         """
-        mkdir -p data/checkv
-        # if [[ -f data/checkv/checkv_selected.fasta ]];then
-        #     rm data/checkv/checkv_selected.fasta
+        mkdir -p data/viral_annotation/checkv
+        # if [[ -f data/viral_annotation/checkv/checkv_selected.fasta ]];then
+        #     rm data/viral_annotation/checkv/checkv_selected.fasta
         # fi
 
         checkv end_to_end \
@@ -99,12 +100,13 @@ rule checkv:
         data/checkv/
 
         # Combine viruses.fna and proviruses.fna, assume they exist
-        cat data/checkv/viruses.fna data/checkv/proviruses.fna > data/checkv/checkv_viruses.fasta
+        cat data/viral_annotation/checkv/viruses.fna data/viral_annotation/checkv/proviruses.fna \
+        > data/checkv/checkv_viruses.fasta
 
         # Grab all Medium and High quality, and Complete, viral genomes and write to fasta file 
         # while read contig; do
-        #     grep -h $contig data/checkv/checkv_viruses.fasta -A 1 >> data/checkv_assembly/checkv_selected_viruses.fasta
-        # done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/checkv_assembly/quality_summary.tsv)
+        #     grep -h $contig data/viral_annotation/checkv/checkv_viruses.fasta -A 1 >> data/viral_annotation/checkv/checkv_selected_viruses.fasta
+        # done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/viral_annotation/checkv/quality_summary.tsv)
         """
 
 # ------------------------------------------------------------------------------------------------
@@ -115,7 +117,7 @@ rule viral_cluster:
         "data/viral_clustering/fastani/fastani_viral.tsv",
         "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
         "data/viral_clustering/mcl/cluster_representative_sequences/done",
-        "finished_viral_assembly_predict"
+        "data/viral_predict/all_samples_viral_sequences.fasta"
     # dynamic("data/viral_clustering/mcl/cluster_representative_sequences/cluster_{id}_rep.fasta"),
     output:
         touch("finished_viral_clustering")
@@ -123,7 +125,7 @@ rule viral_cluster:
 # Run FastANI on viral sequences
 rule fastani_viral:
     input:
-        # checkv_selected = "data/checkv/checkv_selected.fasta"
+        # checkv_selected = "data/viral_annotation/checkv/checkv_selected.fasta"
         all_viral_sequences="data/viral_predict/all_samples_viral_sequences.fasta"
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
