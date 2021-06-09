@@ -49,13 +49,13 @@ def collect_viral_outputs(wildcards):
                    "{sample}.{assembler}.{viral_predict_tool}.fasta",
         sample = SAMPLES,
         assembler = ASSEMBLERS,
-        viral_predict_tool = VIRAL_ASSEMBLY_TOOLS)
+        viral_predict_tool = VIRAL_TOOLS_ASSEMBLY)
 
     assembly_filtered_files = expand("data/viral_predict/assembly_filtered_reads/{sample}/{viral_predict_tool}/{assembler}/"
                    "{sample}.{assembler}.{viral_predict_tool}.fasta",
         sample = SAMPLES,
         assembler = ASSEMBLERS,
-        viral_predict_tool = VIRAL_READ_TOOLS)
+        viral_predict_tool = VIRAL_TOOLS_READS)
     files = [file for file in assembly_files + assembly_filtered_files if os.path.isfile(file)]
     return files
 
