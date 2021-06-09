@@ -37,6 +37,7 @@ rule virsorter_raw_reads:
 # ------------------------------------------------------------------------------------------------
 # Run viral tools on assembly filtered reads
 
+
 rule viral_assembly_filtered_reads_predict:
     input:
         expand("data/viral_predict/assembly_filtered_reads/{sample}/{viral_predict_tool}/{assembler}/done",
@@ -104,7 +105,7 @@ rule seeker_assembly_filtered_reads:
         SEEKER_DIR="data/viral_predict/assembly_filtered_reads/{wildcards.sample}/seeker/{wildcards.assembler}"
         mkdir -p $SEEKER_DIR
         if [ -s {input.filtered_fasta} ]; then
-            seqkit seq -m {params.seeker_min_length} {input.assembly} > $SEEKER_DIR/length_filtered.fasta
+            seqkit seq -m {params.seeker_min_length} {input.filtered_fasta} > $SEEKER_DIR/length_filtered.fasta
 
             predict-metagenome $SEEKER_DIR/length_filtered.fasta \
             > $SEEKER_DIR/seeker_scores.tsv
@@ -143,7 +144,7 @@ rule vibrant_assembly_filtered_reads:
         mkdir -p $VIBRANT_DIR
 
         if [ -s {input.assembly} ]; then
-            seqkit seq -m {params.vibrant_min_length} {input.assembly} \
+            seqkit seq -m {params.vibrant_min_length} {input.filtered_fasta} \
             > $VIBRANT_DIR/length_filtered.fasta
 
             VIBRANT_run.py \

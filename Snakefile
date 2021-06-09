@@ -39,10 +39,20 @@ onstart:
         sys.exit("Need to specify long reads directory")
 
     valid_assemblers = ["flye", "metaflye","canu", "miniasm","wtdbg2", "raven"]
+    valid_viral_tools_assembly = ["virsorter", "vibrant"]
+    valid_viral_tools_reads = ["seeker", "virsorter", "vibrant"]
     for assembler in ASSEMBLERS:
         if assembler not in valid_assemblers:
             sys.exit(f'The specified assembler \'{assembler}\' must be one of: ' \
                      f'{", ".join(str(x) for x in valid_assemblers)}')
+    for viral_tool in VIRAL_TOOLS_ASSEMBLY:
+        if viral_tool not in valid_viral_tools_assembly:
+            sys.exit(f'The specified viral tool \'{viral_tool}\' to be run on assemblies must be one of: ' \
+                     f'{", ".join(str(x) for x in valid_viral_tools_assembly)}')
+    for viral_tool in VIRAL_TOOLS_READS:
+        if viral_tool not in valid_viral_tools_reads and not viral_tool:
+            sys.exit(f'The specified viral tool \'{viral_tool}\' to be run on assembly filtered reads must be one of: ' \
+                     f'{", ".join(str(x) for x in valid_viral_tools_assembly)}')
 
 
 # Load sample_sheet
