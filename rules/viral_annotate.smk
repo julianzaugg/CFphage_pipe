@@ -241,7 +241,8 @@ rule viral_abricate:
 
 rule viral_lineage:
     input:
-        "data/viral_annotation/blast_imgvr/done"
+        "data/viral_annotation/blast_imgvr/done",
+        "data/viral_annotation/imgvr_lineage/done"
     output:
         touch("finished_viral_lineage")
 
@@ -249,7 +250,7 @@ rule viral_protein_blast_imgvr:
     input:
         "data/viral_annotation/prodigal/done"
     output:
-        "data/viral_annotation/blast_imgvr/done",
+        touch("data/viral_annotation/blast_imgvr/done")
     message:
         "BLASTing viral proteins against IMGVR database"
     conda:
@@ -260,7 +261,9 @@ rule viral_protein_blast_imgvr:
         imgvr_protein_db=config["IMGVR_DIAMOND_PROTEIN_DB"],
         e_value = 0.00001,
         max_hsps = 1,
-        max_target_seq = 1
+        max_target_seq = 1,
+        query_cover = 50,
+        subject_cover = 50
     shell:
         """
         mkdir -p data/viral_annotation/blast_imgvr
@@ -274,6 +277,8 @@ rule viral_protein_blast_imgvr:
             --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle qcovhsp scovhsp \
             --max-hsps {params.max_hsps} \
             --max-target-seqs {params.max_target_seq} \
+            --query-cover {params.query_cover} \
+            --subject-cover {params.subject_cover} \ 
             --out data/viral_annotation/blast_imgvr/temp
 
             echo -e "Query_ID\tSubject_ID\tPercentage_of_identical_matches\tAlignment_length\tNumber_of_mismatches\tNumber_of_gap_openings\tStart_of_alignment_in_query\tEnd_of_alignment_in_query\tStart_of_alignment_in_subject\tEnd_of_alignment_in_subject\tExpected_value\tBit_score\tQuery_length\tSubject_length\tSubject_title\tQuery_coverage_per_HSP\tSubject_coverage_per_HSP" \
@@ -284,3 +289,25 @@ rule viral_protein_blast_imgvr:
             rm data/viral_annotation/blast_imgvr/temp
         fi
         """
+
+rule resolve_imgvr_lineage:
+    input:
+        "data/viral_annotation/prodigal/done",
+        "data/viral_annotation/blast_imgvr/done"
+    output:
+        touch("data/viral_annotation/imgvr_lineage/done")
+    conda:
+        "../envs/lineage_resolve.yaml"
+    params:
+        imgvr_taxonomy_reference = config["IMGVR_TAXONOMY_REFERENCE"]
+    shell:
+        f"""
+        mkdir -p data/viral_annotation/imgvr_lineage
+        Rscript --vanilla {SNAKE_PATH}/scripts/viral_resolve_imgvr_lineage.R \
+        {ABSOLUTE_DATA_PATH}/data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv \
+        {ABSOLUTE_DATA_PATH}/data/viral_annotation/prodigal/all_samples_viral_sequences.gff \
+        {imgvr_taxonomy_reference} \
+        data/viral_annotation/imgvr_lineage/
+        touch {{output.done}}
+        """
+
