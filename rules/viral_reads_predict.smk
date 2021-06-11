@@ -143,7 +143,7 @@ rule vibrant_assembly_filtered_reads:
         VIBRANT_DIR="data/viral_predict/assembly_filtered_reads/{wildcards.sample}/vibrant/{wildcards.assembler}"
         mkdir -p $VIBRANT_DIR
 
-        if [ -s {input.assembly} ]; then
+        if [ -s {input.filtered_fasta} ]; then
             seqkit seq -m {params.vibrant_min_length} {input.filtered_fasta} \
             > $VIBRANT_DIR/length_filtered.fasta
 
