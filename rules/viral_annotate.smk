@@ -216,44 +216,6 @@ rule viral_prodigal:
         touch data/viral_annotation/prodigal/done
         """
 
-rule viral_protein_blast_imgvr:
-    input:
-        "data/viral_annotation/prodigal/done"
-    output:
-        "data/viral_annotation/blast_imgvr/done",
-    message:
-        "BLASTing viral proteins against IMGVR database"
-    conda:
-        "../envs/diamond.yaml"
-    threads:
-        config["MAX_THREADS"]
-    params:
-        imgvr_protein_db = config["IMGVR_DIAMOND_PROTEIN_DB"],
-        e_value = "0.00001"
-    shell:
-        """
-        mkdir -p data/viral_annotation/blast_imgvr
-        
-        if [[ -s data/viral_annotation/prodigal/all_viral_sequences.faa ]]; then
-            diamond blastp \
-            --query data/viral_annotation/prodigal/all_viral_sequences.faa \
-            --db {params.imgvr_protein_db} \
-            --evalue 0.00001 \
-            --threads {threads} \
-            --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle qcovhsp scovhsp \
-            --max-hsps 1 \
-            --max-target-seqs 1 \
-            --out data/viral_annotation/blast_imgvr/temp
-            
-            echo -e "Query_ID\tSubject_ID\tPercentage_of_identical_matches\tAlignment_length\tNumber_of_mismatches\tNumber_of_gap_openings\tStart_of_alignment_in_query\tEnd_of_alignment_in_query\tStart_of_alignment_in_subject\tEnd_of_alignment_in_subject\tExpected_value\tBit_score\tQuery_length\tSubject_length\tSubject_title\tQuery_coverage_per_HSP\tSubject_coverage_per_HSP" \
-            > data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
-            
-            cat data/viral_annotation/blast_imgvr/temp \
-            >> data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
-            rm data/viral_annotation/blast_imgvr/temp
-        fi
-        """
-
 rule viral_abricate:
     input:
         all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
@@ -272,4 +234,53 @@ rule viral_abricate:
             abricate -db $db {input.all_viral_sequences} | sed "s/.fasta//g" \
             > $ABRICATE_DIR/viral_abricate_${{db}}.tsv
         done
+        """
+
+# ----------------------------------------------------
+# Infer/assign lineages to viral sequences
+
+rule viral_lineage:
+    input:
+        "data/viral_annotation/blast_imgvr/done"
+    output:
+        touch("finished_viral_lineage")
+
+rule viral_protein_blast_imgvr:
+    input:
+        "data/viral_annotation/prodigal/done"
+    output:
+        "data/viral_annotation/blast_imgvr/done",
+    message:
+        "BLASTing viral proteins against IMGVR database"
+    conda:
+        "../envs/diamond.yaml"
+    threads:
+        config["MAX_THREADS"]
+    params:
+        imgvr_protein_db=config["IMGVR_DIAMOND_PROTEIN_DB"],
+        e_value = 0.00001,
+        max_hsps = 1,
+        max_target_seq = 1
+    shell:
+        """
+        mkdir -p data/viral_annotation/blast_imgvr
+
+        if [[ -s data/viral_annotation/prodigal/all_viral_sequences.faa ]]; then
+            diamond blastp \
+            --query data/viral_annotation/prodigal/all_viral_sequences.faa \
+            --db {params.imgvr_protein_db} \
+            --evalue {params.e_value} \
+            --threads {threads} \
+            --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle qcovhsp scovhsp \
+            --max-hsps {params.max_hsps} \
+            --max-target-seqs {params.max_target_seq} \
+            --out data/viral_annotation/blast_imgvr/temp
+
+            echo -e "Query_ID\tSubject_ID\tPercentage_of_identical_matches\tAlignment_length\tNumber_of_mismatches\tNumber_of_gap_openings\tStart_of_alignment_in_query\tEnd_of_alignment_in_query\tStart_of_alignment_in_subject\tEnd_of_alignment_in_subject\tExpected_value\tBit_score\tQuery_length\tSubject_length\tSubject_title\tQuery_coverage_per_HSP\tSubject_coverage_per_HSP" \
+            > data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
+
+            cat data/viral_annotation/blast_imgvr/temp \
+            >> data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
+            rm data/viral_annotation/blast_imgvr/temp
+        fi
         """
