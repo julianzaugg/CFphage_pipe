@@ -265,9 +265,9 @@ rule viral_protein_blast_imgvr:
         """
         mkdir -p data/viral_annotation/blast_imgvr
 
-        if [[ -s data/viral_annotation/prodigal/all_samples_viral_sequences/all_viral_sequences.faa ]]; then
+        if [[ -s data/viral_annotation/prodigal/all_samples_viral_sequences/all_samples_viral_sequences.faa ]]; then
             diamond blastp \
-            --query data/viral_annotation/prodigal/all_samples_viral_sequences/all_viral_sequences.faa \
+            --query data/viral_annotation/prodigal/all_samples_viral_sequences/all_samples_viral_sequences.faa \
             --db {params.imgvr_protein_db} \
             --evalue {params.e_value} \
             --threads {threads} \
