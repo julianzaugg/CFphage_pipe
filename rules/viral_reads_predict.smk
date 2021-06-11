@@ -37,16 +37,20 @@ rule virsorter_raw_reads:
 # ------------------------------------------------------------------------------------------------
 # Run viral tools on assembly filtered reads
 
-
-rule viral_assembly_filtered_reads_predict:
-    input:
-        expand("data/viral_predict/assembly_filtered_reads/{sample}/{viral_predict_tool}/{assembler}/done",
-            sample = SAMPLES,
-            assembler = ASSEMBLERS,
-            viral_predict_tool = VIRAL_TOOLS_READS),
-        "finished_polishing"
-    output:
-        touch("finished_viral_assembly_filtered_reads_predict")
+if config["SKIP_VIRAL_AF_READS_PREDICT"] != True:
+    rule viral_assembly_filtered_reads_predict:
+        input:
+            expand("data/viral_predict/assembly_filtered_reads/{sample}/{viral_predict_tool}/{assembler}/done",
+                sample = SAMPLES,
+                assembler = ASSEMBLERS,
+                viral_predict_tool = VIRAL_TOOLS_READS),
+            "finished_polishing"
+        output:
+            touch("finished_viral_assembly_filtered_reads_predict")
+else:
+    rule viral_assembly_filtered_reads_predict:
+        output:
+            touch("finished_viral_assembly_filtered_reads_predict")
 
 rule virsorter_assembly_filtered_reads:
     input:

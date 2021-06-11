@@ -13,39 +13,6 @@ rule viral_annotate:
         touch("finished_viral_annotation")
 
 
-# TODO remove
-# rule viral_assembly_filter:
-#     input:
-#         expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/done",
-#             sample=SAMPLES,
-#             assembler=ASSEMBLERS,
-#             viral_predict_tool=VIRAL_TOOLS),
-#         "data/checkv_assembly/done",
-#         "finished_viral_assembly_predict"
-#     output:
-#         touch("finished_viral_assembly_filter")
-
-# def collect_assembly_viral_outputs(wildcards):
-#     files = expand("data/viral_assembly_predict/{sample}/{viral_predict_tool}/{assembler}/"
-#                    "{sample}.{assembler}.{viral_predict_tool}.fasta",
-#         sample=SAMPLES,
-#         assembler=ASSEMBLERS,
-#         viral_predict_tool=VIRAL_TOOLS)
-#     files = [file for file in files if os.path.isfile(file)]
-#     return files
-#
-# rule collect_viral_sequences_assembly:
-#     input:
-#         viral_tool_output=collect_assembly_viral_outputs
-#     output:
-#         "data/viral_predict/assembly/all_samples_assembly_viral_sequences.fasta"
-#     shell:
-#         """
-#         cat {input.viral_tool_output} \
-#         > data/viral_predict/assembly/all_samples_assembly_viral_sequences.fasta
-#         """
-
-
 def collect_viral_outputs(wildcards):
     assembly_files = expand("data/viral_predict/assembly/{sample}/{viral_predict_tool}/{assembler}/"
                    "{sample}.{assembler}.{viral_predict_tool}.fasta",
@@ -237,7 +204,6 @@ rule viral_prodigal:
         "../envs/prodigal.yaml"
     shell:
         """
-        # for rep_sequence_file in data/viral_clustering/mcl/cluster_representative_sequences/cluster_*_rep.fasta; do
         name=$(basename {input.all_viral_sequences} .fasta)
         OUTDIR=data/viral_annotation/prodigal/$name
         mkdir -p $OUTDIR
@@ -246,8 +212,46 @@ rule viral_prodigal:
         -d $OUTDIR/$name.fna \
         -p {params.procedure} \
         -f gff \
-        > $OUTDIR/$name.gff        
-        # done
+        > $OUTDIR/$name.gff
+        touch data/viral_annotation/prodigal/done
+        """
+
+rule viral_protein_blast_imgvr:
+    input:
+        "data/viral_annotation/prodigal/done"
+    output:
+        "data/viral_annotation/blast_imgvr/done",
+    message:
+        "BLASTing viral proteins against IMGVR database"
+    conda:
+        "../envs/diamond.yaml"
+    threads:
+        config["MAX_THREADS"]
+    params:
+        imgvr_protein_db = config["IMGVR_DIAMOND_PROTEIN_DB"],
+        e_value = "0.00001"
+    shell:
+        """
+        mkdir -p data/viral_annotation/blast_imgvr
+        
+        if [[ -s data/viral_annotation/prodigal/all_viral_sequences.faa ]]; then
+            diamond blastp \
+            --query data/viral_annotation/prodigal/all_viral_sequences.faa \
+            --db {params.imgvr_protein_db} \
+            --evalue 0.00001 \
+            --threads {threads} \
+            --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen stitle qcovhsp scovhsp \
+            --max-hsps 1 \
+            --max-target-seqs 1 \
+            --out data/viral_annotation/blast_imgvr/temp
+            
+            echo -e "Query_ID\tSubject_ID\tPercentage_of_identical_matches\tAlignment_length\tNumber_of_mismatches\tNumber_of_gap_openings\tStart_of_alignment_in_query\tEnd_of_alignment_in_query\tStart_of_alignment_in_subject\tEnd_of_alignment_in_subject\tExpected_value\tBit_score\tQuery_length\tSubject_length\tSubject_title\tQuery_coverage_per_HSP\tSubject_coverage_per_HSP" \
+            > data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
+            
+            cat data/viral_annotation/blast_imgvr/temp \
+            >> data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
+            rm data/viral_annotation/blast_imgvr/temp
+        fi
         """
 
 rule viral_abricate:

@@ -50,7 +50,7 @@ onstart:
             sys.exit(f'The specified viral tool \'{viral_tool}\' to be run on assemblies must be one of: ' \
                      f'{", ".join(str(x) for x in valid_viral_tools_assembly)}')
     for viral_tool in VIRAL_TOOLS_READS:
-        if viral_tool not in valid_viral_tools_reads and not viral_tool:
+        if viral_tool not in valid_viral_tools_reads:
             sys.exit(f'The specified viral tool \'{viral_tool}\' to be run on assembly filtered reads must be one of: ' \
                      f'{", ".join(str(x) for x in valid_viral_tools_assembly)}')
 
@@ -178,7 +178,7 @@ rule coverage_reference_genomes:
 # ------------------------------------------------------------------------------------------------
 # TODO
 #          Fix handling of failed assembly/polishing
-#          checkm, gtdbtk, busco?
+#          checkm, gtdbtk, busco, GUNC
 #          Unassembled contigs > polish (viral not making it into assembly)
 #          coverm/to_assembly
 #          kraken / bracken (or alterantive) to profile qc reads. Can map to GTDB though slow.

@@ -9,6 +9,8 @@ VIRAL_TOOLS: # commandline example: VIRAL_TOOLS='{"ASSEMBLY": "vibrant,virsorter
         virsorter
     READS:
         virsorter
+SKIP_VIRAL_AF_READS_PREDICT:
+    False
 GENOME_SIZE:
     6000000
 ASSEMBLER_PARAMS:
@@ -26,6 +28,8 @@ BUSCO_REF_DIR:
     /srv/longreads/nanopore/busco
 CHECKV_DB:
     /srv/db/checkv/checkv-db-v1.0
+IMGVR_DIAMOND_PROTEIN_DB:
+    /srv/db/img/IMG_VR_2020-10-12_5.1/IMGVR_all_proteins.dmnd
 MAX_THREADS:
     8
 MAX_MEMORY:
