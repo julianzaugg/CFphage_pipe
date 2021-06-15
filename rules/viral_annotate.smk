@@ -299,15 +299,18 @@ rule resolve_imgvr_lineage:
     conda:
         "../envs/lineage_resolve.yaml"
     params:
-        imgvr_taxonomy_reference = config["IMGVR_TAXONOMY_REFERENCE"]
+        imgvr_taxonomy_reference = config["IMGVR_TAXONOMY_REFERENCE"],
+        min_fraction_genes_hit = 0.3,
+        min_fraction_majority_rule = 0.5
     shell:
         f"""
         mkdir -p data/viral_annotation/imgvr_lineage
         Rscript --vanilla {SNAKE_PATH}/scripts/viral_resolve_imgvr_lineage.R \
         {ABSOLUTE_DATA_PATH}/data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv \
         {ABSOLUTE_DATA_PATH}/data/viral_annotation/prodigal/all_samples_viral_sequences.gff \
-        {imgvr_taxonomy_reference} \
-        data/viral_annotation/imgvr_lineage/
+        {params.imgvr_taxonomy_reference} \
+        {params.min_fraction_genes_hit} \
+        {params.min_fraction_majority_rule} \
+        data/viral_annotation/imgvr_lineage
         touch {{output.done}}
         """
-
