@@ -311,5 +311,5 @@ rule resolve_imgvr_lineage:
         {{params.imgvr_taxonomy_reference}} \
         {{params.min_fraction_genes_hit}} \
         {{params.min_fraction_majority_rule}} \
-        data/viral_annotation/imgvr_lineage
+        {ABSOLUTE_DATA_PATH}/data/viral_annotation/imgvr_lineage
         """
