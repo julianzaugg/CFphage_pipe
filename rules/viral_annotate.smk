@@ -205,7 +205,7 @@ rule viral_prodigal:
     shell:
         """
         name=$(basename {input.all_viral_sequences} .fasta)
-        OUTDIR=data/viral_annotation/prodigal/$name
+        OUTDIR=data/viral_annotation/prodigal
         mkdir -p $OUTDIR
         prodigal -i {input.all_viral_sequences} \
         -a $OUTDIR/$name.faa \
