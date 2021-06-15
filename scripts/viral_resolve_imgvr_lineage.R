@@ -12,12 +12,12 @@
 ## $5: Minimum fraction of genes WITH significant hit (passing $4) that need to agree at a taxonomy level to assign taxonomy at that level
 ## $6: Output directory
 
+args = commandArgs(trailingOnly=TRUE)
+
 MIN_FRACTION_GENES_HIT = args[4]
 MIN_FRACTION_MAJORITY_RULE = args[5]
 # MIN_FRACTION_GENES_HIT = 0.3
 # MIN_FRACTION_MAJORITY_RULE = 0.5
-
-args = commandArgs(trailingOnly=TRUE)
 
 library(tidyverse)
 setwd("/Users/julianzaugg/Desktop/ACE/major_projects/CF_phage/minion/imgvr")
