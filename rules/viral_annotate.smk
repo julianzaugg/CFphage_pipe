@@ -308,9 +308,9 @@ rule resolve_imgvr_lineage:
         Rscript --vanilla {SNAKE_PATH}/scripts/viral_resolve_imgvr_lineage.R \
         {ABSOLUTE_DATA_PATH}/data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv \
         {ABSOLUTE_DATA_PATH}/data/viral_annotation/prodigal/all_samples_viral_sequences.gff \
-        {params.imgvr_taxonomy_reference} \
-        {params.min_fraction_genes_hit} \
-        {params.min_fraction_majority_rule} \
+        {{params.imgvr_taxonomy_reference}} \
+        {{params.min_fraction_genes_hit}} \
+        {{params.min_fraction_majority_rule}} \
         data/viral_annotation/imgvr_lineage
         touch {{output.done}}
         """
