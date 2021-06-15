@@ -312,5 +312,4 @@ rule resolve_imgvr_lineage:
         {{params.min_fraction_genes_hit}} \
         {{params.min_fraction_majority_rule}} \
         data/viral_annotation/imgvr_lineage
-        touch {{output.done}}
         """
