@@ -82,7 +82,6 @@ protein_lineages.df <- left_join(protein_lineages.df, blast_results.df[,c("Query
 protein_lineages.df <- left_join(protein_lineages.df, subjects_imgvr_taxonomy.df, by = c("Subject_ID_cleaned" = "UViG"))
 protein_lineages.df[protein_lineages.df == ""] <- NA
 protein_lineages.df[!complete.cases(protein_lineages.df),]
-names(protein_lineages.df)
 
 # Separate taxonomies
 protein_lineages.df <- separate(protein_lineages.df, "Taxonomic_classification", into = c("Root", "Domain", "Phylum", "Class", "Order", "Family","Genus", "Species"), remove =F, sep = ";")
@@ -201,7 +200,6 @@ names(sequence_resolved_lineage_gene_fractions.df)[names(sequence_resolved_linea
 
 # ------------------------------------------------------------
 # Add sequences that are missing to the table
-names(sequence_resolved_lineage_gene_fractions.df)
 
 # Create table for missing sequences
 temp <- data.frame("seqid" = unique(gff.df$seqid),"taxonomy_species" = NA,"taxonomy_genus" = NA,"taxonomy_family" = NA,"taxonomy_order" = NA,"taxonomy_class" = NA,"taxonomy_phylum" = NA,"taxonomy_domain" = NA,"taxonomy_root" = NA,
@@ -227,7 +225,6 @@ for (sid in temp$seqid){
 sequence_resolved_lineage_gene_fractions.df <- rbind(sequence_resolved_lineage_gene_fractions.df, temp)
 rownames(sequence_resolved_lineage_gene_fractions.df) <- NULL
 
-names(sequence_resolved_lineage_gene_fractions.df)
 sequence_resolved_lineage_gene_fractions.df <-
   sequence_resolved_lineage_gene_fractions.df[,c("seqid", "Number_of_genes", "Number_of_genes_with_hit",
                                                  "Fraction_of_genes_with_hit","Fraction_genes_at_majority_level",
