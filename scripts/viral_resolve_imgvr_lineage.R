@@ -14,8 +14,8 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-MIN_FRACTION_GENES_HIT = args[4]
-MIN_FRACTION_MAJORITY_RULE = args[5]
+MIN_FRACTION_GENES_HIT = as.numeric(args[4])
+MIN_FRACTION_MAJORITY_RULE = as.numeric(args[5])
 # MIN_FRACTION_GENES_HIT = 0.3
 # MIN_FRACTION_MAJORITY_RULE = 0.5
 
@@ -23,12 +23,12 @@ library(tidyverse)
 
 # -----------------------------------------------------------------------
 # Load BLAST data
-blast_results.df <- read.delim(args[1], sep="\t", header=T)
+blast_results.df <- read.table(args[1], sep="\t", header=T)
 # blast_results.df <- read.table("viral_proteins_imgvr_diamond_blast.tsv", sep = "\t", header = T)
 
 # Load GFF file from prodigal
 # Note - It is likely that not all genes will be in the BLAST results (no significant hit)
-gff.df <- read.delim(args[2], sep="\t", header=F)
+gff.df <- read.delim(args[2], sep="\t", header=F, comment.char="#")
 # gff.df <- read.delim("all_samples_viral_sequences.gff", header=F, comment.char="#")
 names(gff.df) <- c("seqid","source","type","start","end","score","strand","phase","attributes")
 
@@ -39,6 +39,7 @@ gff.df$protein_id <- with(gff.df, paste0(seqid,"_", gsub("ID=[0-9]{1,10}_(.*?);.
 # Note - not all UViGs have a lineage
 imgvr_taxonomy.df <- read.delim(args[3], sep="\t", header=T)
 # imgvr_taxonomy.df <- read.delim("IMGVR_taxonomy.tsv", header = T, sep = "\t")
+names(imgvr_taxonomy.df) <- c("UViG", "Taxonomic_classification")
 rownames(imgvr_taxonomy.df) <- imgvr_taxonomy.df$UViG
 
 # -----------------------------------------------------------------------
