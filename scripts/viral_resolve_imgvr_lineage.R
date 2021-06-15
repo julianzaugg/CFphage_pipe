@@ -20,7 +20,6 @@ MIN_FRACTION_MAJORITY_RULE = args[5]
 # MIN_FRACTION_MAJORITY_RULE = 0.5
 
 library(tidyverse)
-setwd("/Users/julianzaugg/Desktop/ACE/major_projects/CF_phage/minion/imgvr")
 
 # -----------------------------------------------------------------------
 # Load BLAST data
