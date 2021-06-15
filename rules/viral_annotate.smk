@@ -241,6 +241,8 @@ rule viral_abricate:
 
 rule viral_lineage:
     input:
+        "finished_viral_assembly_predict",
+        "finished_viral_assembly_filtered_reads_predict",
         "data/viral_annotation/blast_imgvr/done",
         "data/viral_annotation/imgvr_lineage/done"
     output:
