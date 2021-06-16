@@ -28,6 +28,7 @@ def collect_viral_outputs(wildcards):
     files = [file for file in assembly_files + assembly_filtered_files if os.path.isfile(file)]
     return files
 
+# TODO ensure collect_viral_sequences output are one-line-per-entry
 rule collect_viral_sequences:
     input:
         viral_tool_output = collect_viral_outputs,
@@ -36,7 +37,7 @@ rule collect_viral_sequences:
     output:
         "data/viral_predict/all_samples_viral_sequences.fasta"
     shell:
-        """        
+        """
         cat {input.viral_tool_output} \
         > {output}
         """
@@ -272,9 +273,9 @@ rule viral_protein_blast_imgvr:
         """
         mkdir -p data/viral_annotation/blast_imgvr
 
-        if [[ -s data/viral_annotation/prodigal/all_samples_viral_sequences/all_samples_viral_sequences.faa ]]; then
+        if [[ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]]; then
             diamond blastp \
-            --query data/viral_annotation/prodigal/all_samples_viral_sequences/all_samples_viral_sequences.faa \
+            --query data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
             --db {params.imgvr_protein_db} \
             --evalue {params.e_value} \
             --threads {threads} \
