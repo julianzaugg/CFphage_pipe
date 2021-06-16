@@ -125,6 +125,7 @@ rule seeker_assembly_filtered_reads:
             else
                 touch $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
             fi
+            rm $SEEKER_DIR/length_filtered.fasta
         fi
         """
 

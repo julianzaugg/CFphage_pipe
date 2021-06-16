@@ -30,7 +30,9 @@ def collect_viral_outputs(wildcards):
 
 rule collect_viral_sequences:
     input:
-        viral_tool_output = collect_viral_outputs
+        viral_tool_output = collect_viral_outputs,
+        viral_assembly_filtered_reads_predict = "finished_viral_assembly_filtered_reads_predict",
+        viral_assembly_predict = "finished_viral_assembly_predict"
     output:
         "data/viral_predict/all_samples_viral_sequences.fasta"
     shell:
