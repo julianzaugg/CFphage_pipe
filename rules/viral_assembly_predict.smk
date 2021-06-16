@@ -74,15 +74,20 @@ rule vibrant_assembly:
             seqkit seq -m {params.vibrant_min_length} {input.assembly} \
             > $VIBRANT_DIR/length_filtered.fasta
             
-            VIBRANT_run.py \
-            -i $VIBRANT_DIR/length_filtered.fasta \
-            -folder $VIBRANT_DIR \
-            -d {params.vibrant_database} \
-            -t {threads}
+            if [ -s $VIBRANT_DIR/length_filtered.fasta ]; then
+                VIBRANT_run.py \
+                -i $VIBRANT_DIR/length_filtered.fasta \
+                -folder $VIBRANT_DIR \
+                -d {params.vibrant_database} \
+                -t {threads}
+            fi
             
-            cp $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna \
-            $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
-            
+            if [ -f $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna ]; then
+                cp $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna \
+                $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+            else
+                touch $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+            fi
             if [ -s $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta ]; then
                 sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__vibrant____/g" \
                 $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
