@@ -110,10 +110,11 @@ rule seeker_assembly_filtered_reads:
         mkdir -p $SEEKER_DIR
         if [ -s {input.filtered_fasta} ]; then
             seqkit seq -m {params.seeker_min_length} {input.filtered_fasta} > $SEEKER_DIR/length_filtered.fasta
-
-            predict-metagenome $SEEKER_DIR/length_filtered.fasta \
-            > $SEEKER_DIR/seeker_scores.tsv
-
+            
+            if [ -s $SEEKER_DIR/length_filtered.fasta ]; then
+                predict-metagenome $SEEKER_DIR/length_filtered.fasta \
+                > $SEEKER_DIR/seeker_scores.tsv
+            fi
             if grep -q --max-count 1 "Phage" $SEEKER_DIR/seeker_scores.tsv; then
                 awk -F "\t" '{{if($2=="Phage" && $3 >= 0.5 )print $1 }}' \
                 $SEEKER_DIR/seeker_scores.tsv \
@@ -151,12 +152,14 @@ rule vibrant_assembly_filtered_reads:
         if [ -s {input.filtered_fasta} ]; then
             seqkit seq -m {params.vibrant_min_length} {input.filtered_fasta} \
             > $VIBRANT_DIR/length_filtered.fasta
-
-            VIBRANT_run.py \
-            -i $VIBRANT_DIR/length_filtered.fasta \
-            -folder $VIBRANT_DIR \
-            -d {params.vibrant_database} \
-            -t {threads}
+            
+            if [ -s $VIBRANT_DIR/length_filtered.fasta ]; then
+                VIBRANT_run.py \
+                -i $VIBRANT_DIR/length_filtered.fasta \
+                -folder $VIBRANT_DIR \
+                -d {params.vibrant_database} \
+                -t {threads}
+            fi
             
             if [ -f $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna ]; then
                 cp $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna \
