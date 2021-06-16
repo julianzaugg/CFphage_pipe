@@ -81,7 +81,7 @@ protein_lineages.df <- left_join(protein_lineages.df, blast_results.df[,c("Query
 # Combine with lineage information results
 protein_lineages.df <- left_join(protein_lineages.df, subjects_imgvr_taxonomy.df, by = c("Subject_ID_cleaned" = "UViG"))
 protein_lineages.df[protein_lineages.df == ""] <- NA
-protein_lineages.df[!complete.cases(protein_lineages.df),]
+# protein_lineages.df[!complete.cases(protein_lineages.df),]
 
 # Separate taxonomies
 protein_lineages.df <- separate(protein_lineages.df, "Taxonomic_classification", into = c("Root", "Domain", "Phylum", "Class", "Order", "Family","Genus", "Species"), remove =F, sep = ";")
