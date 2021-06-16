@@ -80,7 +80,7 @@ rule virsorter_assembly_filtered_reads:
             --db-dir {params.virsorter_database} \
             --min-length {params.virsorter_min_length} \
             --jobs {threads} \
-            all 
+            all || touch $VIRSORTER_DIR/final-viral-combined.fa
         fi 
 
         if [[ -f $VIRSORTER_DIR/final-viral-combined.fa ]]; then
@@ -157,10 +157,13 @@ rule vibrant_assembly_filtered_reads:
             -folder $VIBRANT_DIR \
             -d {params.vibrant_database} \
             -t {threads}
-
-            cp $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna \
-            $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
-
+            
+            if [ -f $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna ]; then
+                cp $VIBRANT_DIR/VIBRANT_length_filtered/VIBRANT_phages_length_filtered/length_filtered.phages_combined.fna \
+                $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+            else
+                touch $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
+            fi
             if [ -s $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta ]; then
                 sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__vibrant____/g" \
                 $VIBRANT_DIR/{wildcards.sample}.{wildcards.assembler}.vibrant.fasta
