@@ -272,7 +272,6 @@ rule viral_protein_blast_imgvr:
     shell:
         """
         mkdir -p data/viral_annotation/blast_imgvr
-
         if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
             diamond blastp \
             --query data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
@@ -284,14 +283,14 @@ rule viral_protein_blast_imgvr:
             --max-target-seqs {params.max_target_seq} \
             --query-cover {params.query_cover} \
             --subject-cover {params.subject_cover} \ 
-            --out data/viral_annotation/blast_imgvr/temp
+            --out data/viral_annotation/blast_imgvr/blast_out.tsv
 
             echo -e "Query_ID\tSubject_ID\tPercentage_of_identical_matches\tAlignment_length\tNumber_of_mismatches\tNumber_of_gap_openings\tStart_of_alignment_in_query\tEnd_of_alignment_in_query\tStart_of_alignment_in_subject\tEnd_of_alignment_in_subject\tExpected_value\tBit_score\tQuery_length\tSubject_length\tSubject_title\tQuery_coverage_per_HSP\tSubject_coverage_per_HSP" \
             > data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
 
-            cat data/viral_annotation/blast_imgvr/temp \
+            cat data/viral_annotation/blast_imgvr/blast_out.tsv \
             >> data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv
-            rm data/viral_annotation/blast_imgvr/temp
+            rm data/viral_annotation/blast_imgvr/blast_out.tsv
         fi
         """
 
