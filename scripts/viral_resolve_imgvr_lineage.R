@@ -27,7 +27,8 @@ blast_results.df <- read.table(args[1], sep="\t", header=T)
 # blast_results.df <- read.table("viral_proteins_imgvr_diamond_blast.tsv", sep = "\t", header = T)
 
 # Load GFF file from prodigal
-# Note - It is likely that not all genes will be in the BLAST results (no significant hit)
+# Note - It is likely that not all genes will be in the BLAST results (no significant hit),
+# indeed, may be the case no genes from a sequence will have a significant hit
 gff.df <- read.delim(args[2], sep="\t", header=F, comment.char="#")
 # gff.df <- read.delim("all_samples_viral_sequences.gff", header=F, comment.char="#")
 names(gff.df) <- c("seqid","source","type","start","end","score","strand","phase","attributes")
@@ -157,6 +158,7 @@ sequence_gene_lineage_fractions.df <-
   as.data.frame()
 
 # Save this output
+# TODO - also note those sequences with no BLAST/lineage results?
 sequence_gene_lineage_fractions.df <- left_join(sequence_gene_lineage_fractions.df, Sequence_gene_count.df[,c("seqid", "Number_of_genes_with_hit", "Fraction_of_genes_with_hit")], by = "seqid")
 # write.table(sequence_gene_lineage_fractions.df,
             # file="sequence_gene_lineage_fractions.tsv",
