@@ -145,7 +145,9 @@ rule viral_amrfinderplus:
         mkdir -p data/viral_annotation/amrfinderplus
 
         if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
-            rm data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+            if [[ -f data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff ]]; then 
+                rm data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+            fi
             while read line;do
             if [[  $line == \#* ]]; then
                 echo $line >> data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
