@@ -85,6 +85,16 @@ include: "rules/viral_reads_predict.smk"
 include: "rules/viral_annotate.smk"
 include: "rules/utils.smk"
 
+rule run_full_pipeline:
+    input:
+        "finished_viral_annotation",
+        "finished_viral_lineage",
+        "finished_assembly",
+    output:
+        touch("finished_full_pipeline")
+
+
+
 # ------------------------------------------------------------------------------------------------
 # Coverage
 #   - Of provided reference genomes
