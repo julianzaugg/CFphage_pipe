@@ -164,10 +164,11 @@ rule viral_amrfinderplus:
             
             amrfinder \
             --protein data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
-            --gff data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+            --gff data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff \
             --database {params.amrfinder_db} \
             --plus \
-            --threads {threads} > data/viral_annotation/amrfinderplus/viral_amrfinder.tsv
+            --threads {threads} \
+            --output data/viral_annotation/amrfinderplus/viral_amrfinder.tsv
         fi
         """
 # ------------------------------------------------------------------------------------------------
