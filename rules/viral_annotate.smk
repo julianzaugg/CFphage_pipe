@@ -135,7 +135,7 @@ rule viral_amrfinderplus:
     output:
         touch("data/viral_annotation/amrfinderplus/done")
     conda:
-        "../envs/diamond.yaml"
+        "../envs/amrfinderplus.yaml"
     threads:
         config["MAX_THREADS"]
     shell:
