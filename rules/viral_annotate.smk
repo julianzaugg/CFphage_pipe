@@ -159,8 +159,8 @@ rule viral_amrfinderplus:
             fi
             done < data/viral_annotation/prodigal/all_samples_viral_sequences.gff
             
-            sed -i "s/Name=/OtherName=/g" data/viral_annotation/prodigal/all_samples_viral_sequences.gff 
-            sed -i "s/ID=/Name=/g" data/viral_annotation/prodigal/all_samples_viral_sequences.gff
+            sed -i "s/Name=/OtherName=/g" data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff 
+            sed -i "s/ID=/Name=/g" data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
             
             amrfinder \
             --protein data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
