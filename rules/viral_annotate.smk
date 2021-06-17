@@ -143,18 +143,19 @@ rule viral_amrfinderplus:
     shell:
         """
         mkdir -p data/viral_annotation/amrfinderplus
-        while read line;do
-        if [[  $line == \#* ]]; then
-            echo $line
-        else
-            sequence_id=$(echo "$line" | awk -F "\t" '{{print $1}}')
-            gene_id=$(echo "$line" | awk -F "\t" '{{print $9}}' | awk -F ";" '{{print $1}}' | sed "s/ID=//")
-            echo "$line" | sed -r "s/\tID=[0-9]{{1,10}}/\tID=$sequence_id/" \
-            >> data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
-        fi
-        done < all_samples_viral_sequences.gff
         
         if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
+            while read line;do
+            if [[  $line == \#* ]]; then
+                echo $line
+            else
+                sequence_id=$(echo "$line" | awk -F "\t" '{{print $1}}')
+                gene_id=$(echo "$line" | awk -F "\t" '{{print $9}}' | awk -F ";" '{{print $1}}' | sed "s/ID=//")
+                echo "$line" | sed -r "s/\tID=[0-9]{{1,10}}/\tID=$sequence_id/" \
+                >> data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+            fi
+            done < data/viral_annotation/prodigal/all_samples_viral_sequences.gff
+            
             amrfinder \
             --protein data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
             --gff data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
