@@ -143,11 +143,12 @@ rule viral_amrfinderplus:
     shell:
         """
         mkdir -p data/viral_annotation/amrfinderplus
-        
+
         if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
+            rm data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
             while read line;do
             if [[  $line == \#* ]]; then
-                echo $line
+                echo $line >> data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
             else
                 sequence_id=$(echo "$line" | awk -F "\t" '{{print $1}}')
                 gene_id=$(echo "$line" | awk -F "\t" '{{print $9}}' | awk -F ";" '{{print $1}}' | sed "s/ID=//")
