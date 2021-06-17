@@ -139,7 +139,7 @@ rule viral_amrfinderplus:
     threads:
         config["MAX_THREADS"]
     params:
-        amrfinder_db=config["AMRFINDER_DB"]
+        amrfinder_db=config["AMRFINDERPLUS_DB"]
     shell:
         """
         mkdir -p data/viral_annotation/amrfinderplus
