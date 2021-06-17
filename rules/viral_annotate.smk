@@ -8,7 +8,8 @@ rule viral_annotate:
         "data/viral_predict/all_samples_viral_sequences.fasta",
         "data/viral_annotation/checkv/done",
         "data/viral_annotation/prodigal/done",
-        "data/viral_annotation/abricate/done"
+        "data/viral_annotation/abricate/done",
+        "data/viral_annotation/amrfinderplus/done"
     output:
         touch("finished_viral_annotation")
 
@@ -80,9 +81,78 @@ rule checkv:
         # done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/viral_annotation/checkv/quality_summary.tsv)
         """
 
+# Run prodigal on viruses. Assumes at least one CDS will be present
+rule viral_prodigal:
+    input:
+        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
+    output:
+        touch("data/viral_annotation/prodigal/done")
+    message:
+        "Running prodigal on representative viral sequences"
+    params:
+        procedure = "meta"
+    conda:
+        "../envs/prodigal.yaml"
+    shell:
+        """
+        name=$(basename {input.all_viral_sequences} .fasta)
+        OUTDIR=data/viral_annotation/prodigal
+        mkdir -p $OUTDIR
+        prodigal -i {input.all_viral_sequences} \
+        -a $OUTDIR/$name.faa \
+        -d $OUTDIR/$name.fna \
+        -p {params.procedure} \
+        -f gff \
+        > $OUTDIR/$name.gff
+        touch data/viral_annotation/prodigal/done
+        """
+
+rule viral_abricate:
+    input:
+        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
+    output:
+        touch("data/viral_annotation/abricate/done")
+    conda:
+        "../envs/abricate.yaml"
+    message:
+        "Running abricate on representative viral sequences"
+    shell:
+        """
+        declare -a databases=("card" "vfdb")
+        ABRICATE_DIR="data/viral_annotation/abricate"
+        mkdir -p $ABRICATE_DIR
+        for db in "${{databases[@]}}";do
+            abricate -db $db {input.all_viral_sequences} | sed "s/.fasta//g" \
+            > $ABRICATE_DIR/viral_abricate_${{db}}.tsv
+        done
+        """
+
+# FIXME gff file from prodigal may not work. May need to change Name attribute:
+#  sed "s/Name=/OtherName=/g" | sed "s/ID=/Name=/g" > fixed.gff
+rule viral_amrfinderplus:
+    input:
+        "data/viral_annotation/prodigal/done"
+    output:
+        touch("data/viral_annotation/amrfinderplus/done")
+    conda:
+        "../envs/diamond.yaml"
+    threads:
+        config["MAX_THREADS"]
+    shell:
+        """
+        mkdir -p data/viral_annotation/amrfinderplus
+        if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
+            amrfinder \
+            --protein data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
+            --gff data/viral_annotation/prodigal/all_samples_viral_sequences.gff \
+            --plus \
+            --threads {threads} > data/viral_annotation/amrfinderplus/viral_amrfinder.tsv
+        fi
+        """
 # ------------------------------------------------------------------------------------------------
 # Cluster and dereplicate predicted viral sequences
 
+# NOTE not all sequences will be clustered, specifically if they are singletons.
 rule viral_cluster:
     input:
         "data/viral_clustering/fastani/fastani_viral.tsv",
@@ -192,52 +262,6 @@ rule get_cluster_representatives:
              cp $member_filename data/viral_clustering/mcl/cluster_representative_sequences/${{cluster}}_rep.fasta
          done < data/viral_clustering/mcl/cluster_representatives_lengths.tsv
          """
-
-# Run prodigal on viruses. Assumes at least one CDS will be present
-rule viral_prodigal:
-    input:
-        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
-    output:
-        touch("data/viral_annotation/prodigal/done")
-    message:
-        "Running prodigal on representative viral sequences"
-    params:
-        procedure = "meta"
-    conda:
-        "../envs/prodigal.yaml"
-    shell:
-        """
-        name=$(basename {input.all_viral_sequences} .fasta)
-        OUTDIR=data/viral_annotation/prodigal
-        mkdir -p $OUTDIR
-        prodigal -i {input.all_viral_sequences} \
-        -a $OUTDIR/$name.faa \
-        -d $OUTDIR/$name.fna \
-        -p {params.procedure} \
-        -f gff \
-        > $OUTDIR/$name.gff
-        touch data/viral_annotation/prodigal/done
-        """
-
-rule viral_abricate:
-    input:
-        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
-    output:
-        touch("data/viral_annotation/abricate/done")
-    conda:
-        "../envs/abricate.yaml"
-    message:
-        "Running abricate on representative viral sequences"
-    shell:
-        """
-        declare -a databases=("card" "vfdb")
-        ABRICATE_DIR="data/viral_annotation/abricate"
-        mkdir -p $ABRICATE_DIR
-        for db in "${{databases[@]}}";do
-            abricate -db $db {input.all_viral_sequences} | sed "s/.fasta//g" \
-            > $ABRICATE_DIR/viral_abricate_${{db}}.tsv
-        done
-        """
 
 # ----------------------------------------------------
 # Infer/assign lineages to viral sequences

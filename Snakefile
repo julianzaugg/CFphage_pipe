@@ -165,33 +165,26 @@ rule coverage_reference_genomes:
 #         config["max_threads"]
 #     shell:
 #         'checkm lineage_wf -t {threads} -x fa data/das_tool_bins/das_tool_DASTool_bins data/checkm > data/checkm.out'
-# rule polish:
-#     input:
-#         expand("data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta",
-#                sample = SAMPLES, assembler = ASSEMBLERS),
-#         "finished_assembly"
-#     output:
-#         temp(touch("finished_polishing"))
+
 
 # rule gtdbtk:
 
 # ------------------------------------------------------------------------------------------------
 # TODO
 #          Fix handling of failed assembly/polishing
-#          checkm, gtdbtk, busco, GUNC
-#          Unassembled contigs > polish (viral not making it into assembly)
-#          coverm/to_assembly
-#          kraken / bracken (or alterantive) to profile qc reads. Can map to GTDB though slow.
-#          compile read stats
-#          seeker - input needs to be > 200bp
-#          a) virsorter2 / vibrant (phage identication) DONE
-#          b) checkv  (identify likely true phage) DONE
-#          c) fastANI + MCL (dereplication of phage) DONE
+#          handle short read - hybrid assembly and/or polishing
 #          plasmid identification (PlasFlow/gplas or PlasClass)
 #          log failed assemblies
-#          min contig size for assemblies, 2000bp?
-#          assembly annotation : prodigal >
-#              abricate (VFDB, CARD, etc.), amrfinderplus
-#          viral annotation : prodigal >
-#              abricate (VFDB, CARD, etc.), BLAST against img/vr (majority tax)
+#          annotation : viral and assembly
+#              amrfinderplus
+#              dram?
+#          Generate final summary table(s) and results
+#              Summary read stats
+#              Assembly stats (N50 etc), checkm, gtdbtk, GUNC
+#              Assembly parsnp tree (all assemblies? Apply filtering criteria?)
+#              Viral sequences:
+#                  quality, cluster membership and cluster representative T/F (note not all sequences are clustered)
+#                  Number of genes,
+#                  majority lineage (IMG/VR), Abricate/AMRFinderPlus,
+#
 
