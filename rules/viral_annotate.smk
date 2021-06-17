@@ -138,13 +138,17 @@ rule viral_amrfinderplus:
         "../envs/amrfinderplus.yaml"
     threads:
         config["MAX_THREADS"]
+    params:
+        amrfinder_db=config["AMRFINDER_DB"]
     shell:
         """
         mkdir -p data/viral_annotation/amrfinderplus
+        amrfinder -u
         if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
             amrfinder \
             --protein data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
             --gff data/viral_annotation/prodigal/all_samples_viral_sequences.gff \
+            --database {params.amrfinder_db} \
             --plus \
             --threads {threads} > data/viral_annotation/amrfinderplus/viral_amrfinder.tsv
         fi
