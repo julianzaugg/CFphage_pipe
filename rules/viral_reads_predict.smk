@@ -45,10 +45,12 @@ if config["SKIP_VIRAL_AF_READS_PREDICT"] != True:
                 assembler = ASSEMBLERS,
                 viral_predict_tool = VIRAL_TOOLS_READS),
             "finished_polishing"
+        priority: 1
         output:
             touch("finished_viral_assembly_filtered_reads_predict")
 else:
     rule viral_assembly_filtered_reads_predict:
+        priority: 1
         output:
             touch("finished_viral_assembly_filtered_reads_predict")
 

@@ -57,3 +57,19 @@ rule assembly_abricate:
             > $ABRICATE_DIR/{wildcards.sample}.{wildcards.assembler}.${{db}}.tsv
         done
         """
+
+rule assembly_gplas:
+    input:
+        assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
+    output:
+        touch("data/assembly_annotation/gplas/{sample}/{assembler}/done")
+    conda:
+        "../envs/gplas.yaml"
+    message:
+        "Running gplas on polished assemblies"
+    shell:
+        """
+        mkdir -p "data/assembly_annotation/gplas/{wildcards.sample}/{wildcards.assembler}"
+        
+        
+        """

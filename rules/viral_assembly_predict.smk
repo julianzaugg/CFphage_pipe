@@ -8,6 +8,7 @@ rule viral_assembly_predict:
             assembler = ASSEMBLERS,
             viral_predict_tool = VIRAL_TOOLS_ASSEMBLY),
         "finished_polishing"
+    priority: 1
     output:
         touch("finished_viral_assembly_predict")
 

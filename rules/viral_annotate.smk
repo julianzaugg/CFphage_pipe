@@ -1,5 +1,8 @@
 # Annotate viral sequences
 
+viral_assembly_filtered_reads_predict = "finished_viral_assembly_filtered_reads_predict",
+viral_assembly_predict = "finished_viral_assembly_predict"
+
 rule viral_annotate:
     input:
         "finished_viral_clustering",
@@ -127,8 +130,6 @@ rule viral_abricate:
         done
         """
 
-# FIXME gff file from prodigal may not work. May need to change Name attribute:
-#  sed "s/Name=/OtherName=/g" | sed "s/ID=/Name=/g" > fixed.gff
 rule viral_amrfinderplus:
     input:
         "data/viral_annotation/prodigal/done"
@@ -188,7 +189,6 @@ rule viral_cluster:
 # Run FastANI on viral sequences
 rule fastani_viral:
     input:
-        # checkv_selected = "data/viral_annotation/checkv/checkv_selected.fasta"
         all_viral_sequences="data/viral_predict/all_samples_viral_sequences.fasta"
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
