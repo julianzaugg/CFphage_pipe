@@ -46,7 +46,8 @@ summary_table = pd.DataFrame(map(_split_seqid, seq_ids),
 # Load lineage results.
 # There will be sequences with no lineage result. This is because they had no genes.
 lineage_results = pd.read_csv("data/viral_annotation/imgvr_lineage/sequence_resolved_lineages.tsv", sep = "\t")
-summary_table = summary_table.merge(lineage_results,  how='left', left_on = "Sequence_ID", right_on = "Sequence")
+lineage_results.rename(columns={"Sequence": "Sequence_ID"})
+summary_table = summary_table.merge(lineage_results,  how='left', on = "Sequence_ID")
 
 # Write out a new sequence file and annotate with the consensus lineage as description
 with open(f"{viral_summary_dir}/viral_sequences.fasta", 'w') as fh:
@@ -60,7 +61,8 @@ with open(f"{viral_summary_dir}/viral_sequences.fasta", 'w') as fh:
 # Load checkv results
 checkv_results = pd.read_csv("data/viral_annotation/checkv/quality_summary.tsv", sep = "\t")
 checkv_results = checkv_results.add_prefix("checkv_")
-summary_table = summary_table.merge(checkv_results,  how='left', left_on = "Sequence_ID", right_on = "checkv_contig_id")
+checkv_results.rename(columns={"checkv_contig_id": "Sequence_ID"})
+summary_table = summary_table.merge(checkv_results,  how='left', on = "Sequence_ID")
 
 # -------------------------------------------------------------------------------------------------------------------
 # Load cluster results
@@ -75,7 +77,7 @@ cluster_members_lengths['Cluster_representative'] = \
     np.where(cluster_members_lengths.Sequence_ID.isin(cluster_representive_lengths.Sequence_ID), 'Yes', 'No')
 
 summary_table = summary_table.merge(cluster_members_lengths,
-                                    how='left', left_on = "Sequence_ID", right_on = "Sequence_ID")
+                                    how='left', on = "Sequence_ID")
 summary_table["Cluster"] = summary_table["Cluster"].fillna("Singleton")
 summary_table["Cluster_representative"] = summary_table["Cluster_representative"].fillna("Singleton")
 
