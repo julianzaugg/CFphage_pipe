@@ -3,6 +3,7 @@ import subprocess
 import pathlib
 import glob
 import os
+import re
 
 import pandas as pd
 from Bio import SeqIO
@@ -24,20 +25,15 @@ with open("data/viral_predict/all_samples_viral_sequences.fasta") as fasta_file:
         seq_ids.append(title.split(None, 1)[0])  # First word is ID
         seq_lengths.append(len(sequence))
 
-# Create summary table from IDs and lengths
-summary_table = pd.DataFrame({"Seq_ID" : seq_ids, "Seq_length" : seq_lengths})
 
-# Determine the Sample, assembly tool and viral prediction tool from the name
+# Determine the Sample, assembly tool and viral prediction tool from the name and create summary table
+def _split_seqid(seqid):
+    sequence_details = re.split("_{4}", seqid)[0].split("__")
+    derived_from = sequence_details[0]
+    sample = sequence_details[1]
+    assembly_tool = sequence_details[2]
+    viral_tool = sequence_details[3]
+    return(seqid,derived_from,sample,assembly_tool,viral_tool)
 
-# Get list of names
-# viral_ids = [seq_record.name for seq_record in viral_sequences]
-
-# Make dictionary, add each sequence
-# from seqID, resolve Batch_ID, Barcode_ID, Assembly_method, viral_tool
-# data = {'row_1': [3, 2, 1, 0], 'row_2': ['a', 'b', 'c', 'd']}
-# >>> pd.DataFrame.from_dict(data, orient='index')
-
-# Predicted_from_AF_reads (yes/no)
-# Split on "____" and
-# >MN200521_batch5_barcode01__metaflye__virsorter____contig_95||0_partial
-# >MN200521_batch5_barcode01__metaflye__virsorter____4d63269c-53e4-455c-a732-19bf0959b096||full
+summary_table = pd.DataFrame(map(_split_seqid, seq_ids),
+                             columns = ["Sequence_ID", "Derived_from", "Sample", "Assembly_tool", "Viral_tool"])
