@@ -7,7 +7,7 @@ rule generate_viral_summary:
     input:
         "finished_viral_annotation"
     output:
-        "data/viral_summary.tsv"
+        "data/viral_summary/viral_summary.tsv"
     message:
         "Generating viral summary"
     conda:
