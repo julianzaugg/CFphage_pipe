@@ -63,7 +63,7 @@ def collect_viral_outputs_assembly_filtered(wildcards):
         sample = SAMPLES,
         assembler = ASSEMBLERS,
         viral_predict_tool = VIRAL_TOOLS_READS)
-    files = [file for file in assembly_files if os.path.isfile(file)]
+    files = [file for file in assembly_filtered_files if os.path.isfile(file)]
     return files
 
 rule collect_viral_sequences:
