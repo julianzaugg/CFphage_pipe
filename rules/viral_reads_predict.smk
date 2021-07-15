@@ -131,9 +131,7 @@ rule seeker_assembly_filtered_reads:
 
                 sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
                 $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
-                
-                multifasta2singlefasta $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta > \
-                $SEEKER_DIR/temp; mv $SEEKER_DIR/temp $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+
             else
                 touch $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
             fi

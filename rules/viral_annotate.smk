@@ -74,6 +74,8 @@ rule collect_viral_sequences:
         viral_assembly_predict = "finished_viral_assembly_predict"
     output:
         "data/viral_predict/all_samples_viral_sequences.fasta"
+    conda:
+        "../envs/seqtk.yaml"
     shell:
         """
         # Convert multi-line fasta to single-line fasta
@@ -87,8 +89,7 @@ rule collect_viral_sequences:
         cat {input.viral_tool_output_assembly_filtered} > data/viral_predict/temp2
         sed -i "s/>/>ASSEMBLY_FILTERED__/" data/viral_predict/temp2
         
-        cat data/viral_predict/temp data/viral_predict/temp2 | multifasta2singlefasta \
-        > {output}
+        cat data/viral_predict/temp data/viral_predict/temp2 | seqtk seq -l 0 - > {output}        
         
         rm data/viral_predict/temp data/viral_predict/temp2
         """
