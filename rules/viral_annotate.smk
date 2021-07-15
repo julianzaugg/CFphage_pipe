@@ -87,7 +87,7 @@ rule collect_viral_sequences:
         cat {input.viral_tool_output_assembly_filtered} > data/viral_predict/temp2
         sed -i "s/>/>ASSEMBLY_FILTERED__/" data/viral_predict/temp2
         
-        cat data/viral_predict/temp data/viral_predict/temp2 \
+        cat data/viral_predict/temp data/viral_predict/temp2 | multifasta2singlefasta \
         > {output}
         
         rm data/viral_predict/temp data/viral_predict/temp2
