@@ -82,7 +82,7 @@ summary_table["Cluster_representative"] = summary_table["Cluster_representative"
 # -------------------------------------------------------------------------------------------------------------------
 # Write summary table
 summary_table.to_csv(f"{viral_summary_dir}/viral_summary.tsv", sep = "\t",index=False)
-summary_table.to_excel(f"{viral_summary_dir}/viral_summary.xlsx",index=False)
+summary_table.to_excel(f"{viral_summary_dir}/viral_summary.xlsx", index=False)
 
 # TODO - summary table for all proteins?
 # amrfinder_plus_N_hits
