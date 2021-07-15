@@ -109,6 +109,12 @@ rule seeker_assembly_filtered_reads:
     shell:
         """
         SEEKER_DIR="data/viral_predict/assembly_filtered_reads/{wildcards.sample}/seeker/{wildcards.assembler}"
+        
+        # Convert multi-line fasta to single-line fasta
+        multifasta2singlefasta(){{
+            awk '/^>/ {{ if(NR>1) print "";  printf("%s\n",$0); next; }} {{ printf("%s",$0);}}  END {{printf("\n");}}' $1
+        }}
+        
         mkdir -p $SEEKER_DIR
         if [ -s {input.filtered_fasta} ]; then
             seqkit seq -m {params.seeker_min_length} {input.filtered_fasta} > $SEEKER_DIR/length_filtered.fasta
@@ -125,6 +131,9 @@ rule seeker_assembly_filtered_reads:
 
                 sed -i "s/>/>{wildcards.sample}__{wildcards.assembler}__seeker____/g" \
                 $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
+                
+                multifasta2singlefasta $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta > \
+                $SEEKER_DIR/temp; mv $SEEKER_DIR/temp $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
             else
                 touch $SEEKER_DIR/{wildcards.sample}.{wildcards.assembler}.seeker.fasta
             fi

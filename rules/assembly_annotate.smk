@@ -58,6 +58,7 @@ rule assembly_abricate:
         done
         """
 
+# FIXME change to plasflow or plasclass as these don't require GFA
 rule assembly_gplas:
     input:
         assembly = "data/polishing/{sample}/medaka/{assembler}/{sample}.{assembler}.medaka.fasta"
@@ -71,5 +72,5 @@ rule assembly_gplas:
         """
         mkdir -p "data/assembly_annotation/gplas/{wildcards.sample}/{wildcards.assembler}"
         
-        
+        gplas.sh -c plasflow
         """

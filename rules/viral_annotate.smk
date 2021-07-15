@@ -1,7 +1,23 @@
 # Annotate viral sequences
 
-viral_assembly_filtered_reads_predict = "finished_viral_assembly_filtered_reads_predict",
-viral_assembly_predict = "finished_viral_assembly_predict"
+# viral_assembly_filtered_reads_predict = "finished_viral_assembly_filtered_reads_predict"
+# viral_assembly_predict = "finished_viral_assembly_predict"
+
+rule generate_viral_summary:
+    input:
+        "finished_viral_annotation"
+    output:
+        "data/viral_summary"
+    message:
+        "Generating viral summary"
+    conda:
+        "../envs/python.yaml"
+    threads:
+        config["MAX_THREADS"]
+    script:
+        "../scripts/generate_viral_summary.py"
+
+
 
 rule viral_annotate:
     input:
@@ -32,18 +48,49 @@ def collect_viral_outputs(wildcards):
     files = [file for file in assembly_files + assembly_filtered_files if os.path.isfile(file)]
     return files
 
-# TODO ensure collect_viral_sequences output are one-line-per-entry
+def collect_viral_outputs_assembly(wildcards):
+    assembly_files = expand("data/viral_predict/assembly/{sample}/{viral_predict_tool}/{assembler}/"
+                   "{sample}.{assembler}.{viral_predict_tool}.fasta",
+        sample = SAMPLES,
+        assembler = ASSEMBLERS,
+        viral_predict_tool = VIRAL_TOOLS_ASSEMBLY)
+    files = [file for file in assembly_files if os.path.isfile(file)]
+    return files
+
+def collect_viral_outputs_assembly_filtered(wildcards):
+    assembly_filtered_files = expand("data/viral_predict/assembly_filtered_reads/{sample}/{viral_predict_tool}/{assembler}/"
+                   "{sample}.{assembler}.{viral_predict_tool}.fasta",
+        sample = SAMPLES,
+        assembler = ASSEMBLERS,
+        viral_predict_tool = VIRAL_TOOLS_READS)
+    files = [file for file in assembly_files if os.path.isfile(file)]
+    return files
+
 rule collect_viral_sequences:
     input:
-        viral_tool_output = collect_viral_outputs,
+        viral_tool_output_assembly = collect_viral_outputs_assembly,
+        viral_tool_output_assembly_filtered = collect_viral_outputs_assembly_filtered,
         viral_assembly_filtered_reads_predict = "finished_viral_assembly_filtered_reads_predict",
         viral_assembly_predict = "finished_viral_assembly_predict"
     output:
         "data/viral_predict/all_samples_viral_sequences.fasta"
     shell:
         """
-        cat {input.viral_tool_output} \
+        # Convert multi-line fasta to single-line fasta
+        multifasta2singlefasta(){{
+            awk '/^>/ {{ if(NR>1) print "";  printf("%s\n",$0); next; }} {{ printf("%s",$0);}}  END {{printf("\n");}}' $1
+        }}
+        
+        cat {input.viral_tool_output_assembly} > data/viral_predict/temp
+        sed -i "s/>/>ASSEMBLY__/" data/viral_predict/temp
+        
+        cat {input.viral_tool_output_assembly_filtered} > data/viral_predict/temp2
+        sed -i "s/>/>ASSEMBLY_FILTERED__/" data/viral_predict/temp2
+        
+        cat data/viral_predict/temp data/viral_predict/temp2 \
         > {output}
+        
+        rm data/viral_predict/temp data/viral_predict/temp2
         """
 
 # Run checkV on predicted viral sequences
