@@ -87,6 +87,7 @@ include: "rules/utils.smk"
 
 rule run_full_pipeline:
     input:
+        "data/viral_summary.tsv"
         "finished_viral_annotation",
         "finished_viral_lineage",
         "finished_assembly",

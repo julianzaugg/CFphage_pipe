@@ -7,17 +7,13 @@ rule generate_viral_summary:
     input:
         "finished_viral_annotation"
     output:
-        "data/viral_summary"
+        "data/viral_summary.tsv"
     message:
         "Generating viral summary"
     conda:
         "../envs/python.yaml"
-    threads:
-        config["MAX_THREADS"]
     script:
         "../scripts/generate_viral_summary.py"
-
-
 
 rule viral_annotate:
     input:
