@@ -72,21 +72,19 @@ rule collect_viral_sequences:
     output:
         "data/viral_predict/all_samples_viral_sequences.fasta"
     conda:
-        "../envs/seqtk.yaml"
+        "../envs/seqkit.yaml"
+    threads:
+        config["MAX_THREADS"]
     shell:
         """
-        # Convert multi-line fasta to single-line fasta
-        multifasta2singlefasta(){{
-            awk '/^>/ {{ if(NR>1) print "";  printf("%s\n",$0); next; }} {{ printf("%s",$0);}}  END {{printf("\n");}}' $1
-        }}
-        
         cat {input.viral_tool_output_assembly} > data/viral_predict/temp
         sed -i "s/>/>ASSEMBLY__/" data/viral_predict/temp
         
         cat {input.viral_tool_output_assembly_filtered} > data/viral_predict/temp2
         sed -i "s/>/>ASSEMBLY_FILTERED__/" data/viral_predict/temp2
         
-        cat data/viral_predict/temp data/viral_predict/temp2 | seqtk seq -l 0 - > {output}        
+        #cat data/viral_predict/temp data/viral_predict/temp2 | seqtk seq -l 0 - > {output}
+        cat data/viral_predict/temp data/viral_predict/temp2 | seqkit seq -w 0 --threads {threads} > {output}        
         
         rm data/viral_predict/temp data/viral_predict/temp2
         """
