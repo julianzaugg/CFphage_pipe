@@ -28,8 +28,11 @@ except FileExistsError:
 #         seq_ids.append(title.split(None, 1)[0])  # First word is ID
 #         seq_lengths.append(len(sequence))
 
+# Although we use the CheckV output for all annotation, we can pull the original IDs from the 'original'
+# predicted viral sequences
 viral_sequences = list(SeqIO.parse("data/viral_predict/all_samples_viral_sequences.fasta", "fasta"))
 seq_ids = [s.name for s in viral_sequences]
+seq_lengths = [len(s) for s in viral_sequences]
 
 # Determine the Sample, assembly tool and viral prediction tool from the name and create summary table
 def _split_seqid(seqid):
@@ -42,6 +45,7 @@ def _split_seqid(seqid):
 
 summary_table = pd.DataFrame(map(_split_seqid, seq_ids),
                              columns = ["Sequence_ID", "Derived_from", "Sample", "Assembly_tool", "Viral_tool"])
+summary_table["Sequence_length"] = pd.Series(seq_lengths)
 # -------------------------------------------------------------------------------------------------------------------
 # Load lineage results.
 # There will be sequences with no lineage result. This is because they had no genes.

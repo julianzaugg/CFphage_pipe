@@ -297,7 +297,6 @@ rule mcl:
         touch {output.done}
         """
 
-# TODO output file listing : cluster rep(TRUE/FALSE) seq_name
 rule get_cluster_representatives:
     input:
         mcl_viral_clusters="data/viral_clustering/mcl/mcl_viral_clusters.tsv",
@@ -319,7 +318,7 @@ rule get_cluster_representatives:
              done < <(echo "$cluster_members" | tr , "\n")
          done < {input.mcl_viral_clusters}
 
-         cat data/viral_clustering/mcl/clusters_all_members_lengths.tsv | sort -k 1,1 -r -k 3,3 \
+         sort -k 1,1 -k3,3rg data/viral_clustering/mcl/clusters_all_members_lengths.tsv \
          > data/viral_clustering/mcl/temp
          mv data/viral_clustering/mcl/temp data/viral_clustering/mcl/clusters_all_members_lengths.tsv
 
@@ -359,7 +358,7 @@ rule viral_protein_blast_imgvr:
     threads:
         config["MAX_THREADS"]
     params:
-        imgvr_protein_db=config["IMGVR_DIAMOND_PROTEIN_DB"],
+        imgvr_protein_db = config["IMGVR_DIAMOND_PROTEIN_DB"],
         e_value = 0.00001,
         max_hsps = 1,
         max_target_seq = 1,
