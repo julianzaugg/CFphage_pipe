@@ -183,6 +183,7 @@ rule coverage_reference_genomes:
 # ------------------------------------------------------------------------------------------------
 # TODO
 #          Fix handling of failed assembly/polishing
+#          viralverify on final viral sequences
 #          handle short read - hybrid assembly and/or polishing
 #          plasmid identification (PlasFlow/gplas or PlasClass)
 #          log failed assemblies
@@ -193,9 +194,4 @@ rule coverage_reference_genomes:
 #              Summary read stats
 #              Assembly stats (N50 etc), checkm, gtdbtk, GUNC
 #              Assembly parsnp tree (all assemblies? Apply filtering criteria?)
-#              Viral sequences:
-#                  quality, cluster membership and cluster representative T/F (note not all sequences are clustered)
-#                  Number of genes,
-#                  majority lineage (IMG/VR), Abricate/AMRFinderPlus,
-#
 

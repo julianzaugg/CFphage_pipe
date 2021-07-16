@@ -20,7 +20,7 @@ rule viral_annotate:
         "finished_viral_clustering",
         "finished_viral_assembly_predict",
         "finished_viral_assembly_filtered_reads_predict",
-        "data/viral_predict/all_samples_viral_sequences.fasta",
+        "data/viral_annotation/checkv/checkv_viruses.fasta"
         "data/viral_annotation/checkv/done",
         "data/viral_annotation/prodigal/done",
         "data/viral_annotation/abricate/done",
@@ -95,7 +95,8 @@ rule checkv:
     input:
         all_viral_sequences="data/viral_predict/all_samples_viral_sequences.fasta"
     output:
-        touch("data/viral_annotation/checkv/done")
+        touch("data/viral_annotation/checkv/done"),
+        "data/viral_annotation/checkv/checkv_viruses.fasta"
     message:
         "Running checkv"
     params:
@@ -128,10 +129,11 @@ rule checkv:
         # done < <(awk -F "\t" '$8~/(Complete|[Medium,High]-quality)$/{{print $1}}' data/viral_annotation/checkv/quality_summary.tsv)
         """
 
-# Run prodigal on viruses. Assumes at least one CDS will be present
+# Run prodigal on viruses.
 rule viral_prodigal:
     input:
-        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
+        # all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/viral_annotation/checkv/checkv_viruses.fasta"
     output:
         touch("data/viral_annotation/prodigal/done")
     message:
@@ -156,7 +158,8 @@ rule viral_prodigal:
 
 rule viral_abricate:
     input:
-        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
+        # all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
+        all_viral_sequences= "data/viral_annotation/checkv/checkv_viruses.fasta"
     output:
         touch("data/viral_annotation/abricate/done")
     conda:
@@ -225,7 +228,8 @@ rule viral_cluster:
         "data/viral_clustering/fastani/fastani_viral.tsv",
         "data/viral_clustering/mcl/mcl_viral_clusters.tsv",
         "data/viral_clustering/mcl/cluster_representative_sequences/done",
-        "data/viral_predict/all_samples_viral_sequences.fasta"
+        "data/viral_annotation/checkv/checkv_viruses.fasta"
+        # "data/viral_predict/all_samples_viral_sequences.fasta"
     # dynamic("data/viral_clustering/mcl/cluster_representative_sequences/cluster_{id}_rep.fasta"),
     output:
         touch("finished_viral_clustering")
@@ -233,7 +237,8 @@ rule viral_cluster:
 # Run FastANI on viral sequences
 rule fastani_viral:
     input:
-        all_viral_sequences="data/viral_predict/all_samples_viral_sequences.fasta"
+        # all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/viral_annotation/checkv/checkv_viruses.fasta"
     output:
         "data/viral_clustering/fastani/fastani_viral.tsv"
     message:
