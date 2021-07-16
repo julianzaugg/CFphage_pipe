@@ -66,8 +66,23 @@ with open(f"{viral_summary_dir}/viral_sequences.fasta", 'w') as fh:
 checkv_results = pd.read_csv("data/viral_annotation/checkv/quality_summary.tsv", sep = "\t")
 checkv_results = checkv_results.add_prefix("checkv_")
 checkv_results = checkv_results.rename(columns={"checkv_contig_id": "Sequence_ID"})
-summary_table = summary_table.merge(checkv_results,  how='left', on = "Sequence_ID")
 
+# Sequences may be missing from the checkv result due to an appended '_#' in the ID. These should be the proviruses.
+# Create an ID that matches the checkv summary table
+summary_table["CheckV_sequence_ID"] = summary_table.apply(lambda x: x.Sequence_ID.rsplit("_",1)[0], axis = 1)
+# Split sequences into separate dataframes, those with matching IDs and those without
+a = summary_table[summary_table["Sequence_ID"].isin(checkv_results["Sequence_ID"])]
+b = summary_table[-summary_table["Sequence_ID"].isin(checkv_results["Sequence_ID"])]
+# Sequences that are present are simply the same ID
+a["CheckV_sequence_ID"] = a["Sequence_ID"]
+# And merge the dataframes together
+summary_table = pd.concat([a,b])
+
+# Now merge the checkv results in
+summary_table = summary_table.merge(checkv_results,  how='left', left_on = "CheckV_sequence_ID", right_on = "Sequence_ID")
+# Clean up column names
+summary_table = summary_table.drop(['Sequence_ID_y'], axis=1)
+summary_table = summary_table.rename(columns={"Sequence_ID_x": "Sequence_ID"})
 # -------------------------------------------------------------------------------------------------------------------
 # Load cluster results
 cluster_representive_lengths = pd.read_csv("data/viral_clustering/mcl/cluster_representatives_lengths.tsv", sep = "\t",
