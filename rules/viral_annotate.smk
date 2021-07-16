@@ -192,27 +192,27 @@ rule viral_amrfinderplus:
         """
         mkdir -p data/viral_annotation/amrfinderplus
 
-        if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
-            if [[ -f data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff ]]; then 
-                rm data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+        if [ -s data/viral_annotation/prodigal/checkv_viruses.faa ]; then
+            if [[ -f data/viral_annotation/amrfinderplus/checkv_viruses_fixed.gff ]]; then 
+                rm data/viral_annotation/amrfinderplus/checkv_viruses_fixed.gff
             fi
             while read line;do
             if [[  $line == \#* ]]; then
-                echo $line >> data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+                echo $line >> data/viral_annotation/amrfinderplus/checkv_viruses_fixed.gff
             else
                 sequence_id=$(echo "$line" | awk -F "\t" '{{print $1}}')
                 gene_id=$(echo "$line" | awk -F "\t" '{{print $9}}' | awk -F ";" '{{print $1}}' | sed "s/ID=//")
                 echo "$line" | sed -r "s/\tID=[0-9]{{1,10}}/\tID=$sequence_id/" \
-                >> data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+                >> data/viral_annotation/amrfinderplus/checkv_viruses_fixed.gff
             fi
-            done < data/viral_annotation/prodigal/all_samples_viral_sequences.gff
+            done < data/viral_annotation/prodigal/checkv_viruses.gff
             
-            sed -i "s/Name=/OtherName=/g" data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff 
-            sed -i "s/ID=/Name=/g" data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff
+            sed -i "s/Name=/OtherName=/g" data/viral_annotation/amrfinderplus/checkv_viruses_fixed.gff 
+            sed -i "s/ID=/Name=/g" data/viral_annotation/amrfinderplus/checkv_viruses_fixed.gff
             
             amrfinder \
-            --protein data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
-            --gff data/viral_annotation/amrfinderplus/all_samples_viral_sequences_fixed.gff \
+            --protein data/viral_annotation/prodigal/checkv_viruses.faa \
+            --gff data/viral_annotation/amrfinderplus/checkv_viruses_fixed.gff \
             --database {params.amrfinder_db} \
             --plus \
             --threads {threads} \
@@ -367,9 +367,9 @@ rule viral_protein_blast_imgvr:
     shell:
         """
         mkdir -p data/viral_annotation/blast_imgvr
-        if [ -s data/viral_annotation/prodigal/all_samples_viral_sequences.faa ]; then
+        if [ -s data/viral_annotation/prodigal/checkv_viruses.faa ]; then
             diamond blastp \
-            --query data/viral_annotation/prodigal/all_samples_viral_sequences.faa \
+            --query data/viral_annotation/prodigal/checkv_viruses.faa \
             --db {params.imgvr_protein_db} \
             --evalue {params.e_value} \
             --threads {threads} \
@@ -406,7 +406,7 @@ rule resolve_imgvr_lineage:
         mkdir -p data/viral_annotation/imgvr_lineage
         Rscript --vanilla {SNAKE_PATH}/scripts/viral_resolve_imgvr_lineage.R \
         {ABSOLUTE_DATA_PATH}/data/viral_annotation/blast_imgvr/viral_proteins_imgvr_diamond_blast.tsv \
-        {ABSOLUTE_DATA_PATH}/data/viral_annotation/prodigal/all_samples_viral_sequences.gff \
+        {ABSOLUTE_DATA_PATH}/data/viral_annotation/prodigal/checkv_viruses.gff \
         {{params.imgvr_taxonomy_reference}} \
         {{params.min_fraction_genes_hit}} \
         {{params.min_fraction_majority_rule}} \
