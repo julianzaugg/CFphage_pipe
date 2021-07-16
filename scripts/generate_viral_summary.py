@@ -21,16 +21,16 @@ except FileExistsError:
 
 # -------------------------------------------------------------------------------------------------------------------
 # Load viral sequences from FASTA file.
-# with open("data/viral_predict/all_samples_viral_sequences.fasta") as fasta_file:  # Will close handle cleanly
+# with open("data/viral_annotation/checkv/checkv_viruses.fasta") as fasta_file:  # Will close handle cleanly
 #     seq_ids = []
 #     seq_lengths = []
 #     for title, sequence in SimpleFastaParser(fasta_file):
 #         seq_ids.append(title.split(None, 1)[0])  # First word is ID
 #         seq_lengths.append(len(sequence))
 
-# Although we use the CheckV output for all annotation, we can pull the original IDs from the 'original'
-# predicted viral sequences
-viral_sequences = list(SeqIO.parse("data/viral_predict/all_samples_viral_sequences.fasta", "fasta"))
+
+viral_sequences = list(SeqIO.parse("data/viral_annotation/checkv/checkv_viruses.fasta", "fasta"))
+
 seq_ids = [s.name for s in viral_sequences]
 seq_lengths = [len(s) for s in viral_sequences]
 

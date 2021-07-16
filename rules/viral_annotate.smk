@@ -92,7 +92,7 @@ rule collect_viral_sequences:
 # Run checkV on predicted viral sequences
 rule checkv:
     input:
-        all_viral_sequences="data/viral_predict/all_samples_viral_sequences.fasta"
+        all_viral_sequences = "data/viral_predict/all_samples_viral_sequences.fasta"
     output:
         touch("data/viral_annotation/checkv/done"),
         "data/viral_annotation/checkv/checkv_viruses.fasta"
