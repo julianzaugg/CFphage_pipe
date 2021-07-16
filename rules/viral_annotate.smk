@@ -20,6 +20,7 @@ rule viral_annotate:
         "finished_viral_clustering",
         "finished_viral_assembly_predict",
         "finished_viral_assembly_filtered_reads_predict",
+        "finished_viral_lineage",
         "data/viral_annotation/checkv/checkv_viruses.fasta",
         "data/viral_annotation/checkv/done",
         "data/viral_annotation/prodigal/done",
