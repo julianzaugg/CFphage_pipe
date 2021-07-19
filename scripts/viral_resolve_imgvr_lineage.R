@@ -233,6 +233,18 @@ sequence_resolved_lineage_gene_fractions.df <-
                                                  "Majority_taxonomy_level", "Majority_taxonomy")]
 names(sequence_resolved_lineage_gene_fractions.df)[1] <- "Sequence"
 
+
+
+# Note regarding output/categories
+# “Not enough genes with hits to reference”:
+# Not enough genes hit reference database to try and classify sequence, no taxonomy string will be assigned
+#
+# “No majority lineage”:
+# No agreement on majority taxonomy (> 50%), no taxonomy string will be assigned
+#
+# When “Majority_taxonomy_level” = “taxonomy_species” and where “Majority_taxonomy” is all “unassigned”:
+# Majority of genes hit something in reference database, but the majority taxonomy is completely unassigned
+
 # write.table(sequence_resolved_lineage_gene_fractions.df,
             # file="sequence_resolved_lineages.tsv",
             # sep="\t", quote=F, row.names=F, col.names=T)
@@ -240,5 +252,4 @@ write.table(sequence_resolved_lineage_gene_fractions.df,
             file=paste0(args[6], "/sequence_resolved_lineages.tsv"),
             sep="\t", quote=F, row.names=F, col.names=T)
 
-# gff.df$seqid %in% sequence_resolved_lineage_gene_fractions.df$seqid
 
