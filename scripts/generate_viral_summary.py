@@ -65,6 +65,7 @@ with open(f"{viral_summary_dir}/viral_sequences.fasta", 'w') as fh:
 # Load checkv results
 checkv_results = pd.read_csv("data/viral_annotation/checkv/quality_summary.tsv", sep = "\t")
 checkv_results = checkv_results.add_prefix("checkv_")
+checkv_results = checkv_results.rename(columns={"checkv_checkv_quality": "checkv_quality"})
 checkv_results = checkv_results.rename(columns={"checkv_contig_id": "Sequence_ID"})
 
 # Sequences may be missing from the checkv result due to an appended '_#' in the ID. These should be the proviruses.
