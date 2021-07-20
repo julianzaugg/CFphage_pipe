@@ -412,10 +412,15 @@ myplot <-
   scale_fill_manual(values = tax_palette, name = "Majority taxonomy") +
   scale_colour_manual(values = lapply(tax_palette, darken,3), name = "Majority taxonomy") +
   scale_y_continuous(breaks = seq(0, 115000, 5000), limits= c(0,115000),expand = c(0,0)) +
+  guides(fill=guide_legend(ncol=1,
+                           keywidth=0.2,
+                           keyheight=0.2,
+                           default.unit="cm")) +
   theme(panel.background = element_blank(),
         axis.text.x = element_text(angle =45, hjust = 1, vjust = 1, colour = "black"),
         legend.title = element_text(face = "bold", size = 10, hjust = 0.5),
         legend.key = element_rect(colour = NA, fill = NA),
+        legend.text = element_text(size = 4),
         legend.box.background = element_blank(),
         panel.grid.major.y = element_line(colour="grey70", size=0.1),
         panel.grid.major.x = element_blank()
@@ -437,17 +442,22 @@ myplot <-
   scale_fill_manual(values = tax_palette, name = "Majority taxonomy") +
   scale_colour_manual(values = lapply(tax_palette, darken,3), name = "Majority taxonomy") +
   scale_y_continuous(breaks = seq(0, 200, 20), limits= c(-1,201),expand = c(0,0)) +
+  guides(fill=guide_legend(ncol=1,
+                           keywidth=0.2,
+                           keyheight=0.2,
+                           default.unit="cm")) +
   theme(panel.background = element_blank(),
         axis.text.x = element_text(angle =45, hjust = 1, vjust = 1, colour = "black"),
         legend.title = element_text(face = "bold", size = 10, hjust = 0.5),
         legend.key = element_rect(colour = NA, fill = NA),
+        legend.text = element_text(size = 4),
         legend.box.background = element_blank(),
         panel.grid.major.y = element_line(colour="grey70", size=0.1),
         panel.grid.major.x = element_blank()
   )
 ggsave(filename = "results/cluster_number_of_genes.pdf",
        plot = myplot,
-       height = 10,
+       height = 12,
        width = 100,
        units = "cm",
        device = "pdf")
