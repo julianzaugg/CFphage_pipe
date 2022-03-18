@@ -94,6 +94,8 @@ rule run_full_pipeline:
     output:
         touch("finished_full_pipeline")
 
+# optional rule/workflow - can wrap in if checks, or wildcard inputs
+
 
 
 # ------------------------------------------------------------------------------------------------
@@ -183,8 +185,11 @@ rule coverage_reference_genomes:
 # ------------------------------------------------------------------------------------------------
 # TODO
 #          Fix handling of failed assembly/polishing
+#          Interface to
+#          Rasusa to estimate genome size
 #          viralverify on final viral sequences
 #          handle short read - hybrid assembly and/or polishing
+#          Dereplication of viral sequences (per sample/contig/coordinates?) prior to clustering?
 #          plasmid identification (PlasFlow/gplas or PlasClass)
 #          log failed assemblies
 #          annotation : viral and assembly
