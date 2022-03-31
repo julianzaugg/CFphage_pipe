@@ -1,0 +1,16 @@
+name: cfpage_pipe
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - anaconda
+dependencies:
+  - python>=3.7
+  - snakemake>=6.0.5
+  - ruamel.yaml>=0.15.99 # needs to be explicit
+  - numpy
+  - pandas
+  - biopython
+  - mamba>=0.8.2
+  - pigz = 2.4
+  - parallel

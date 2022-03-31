@@ -11,10 +11,10 @@ import pandas as pd
 
 
 sys.path.append(
-    os.path.join(os.path.dirname(os.path.abspath(workflow.snakefile)), "scripts")
+    os.path.join(os.path.dirname(os.path.abspath(workflow.snakefile)),"scripts")
 )
 
-configfile: "config.yaml"
+configfile: "config/config.yaml"
 
 # Get list of samples
 LONG_READ_DIR = config["LONG_READ_DIR"]
