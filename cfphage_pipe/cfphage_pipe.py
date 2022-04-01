@@ -100,8 +100,8 @@ def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix
                 signal.alarm(120)
                 os.environ[db_name] = input(f'Input {db_name} now:')
                 try:
-                    os.makedirs('os.environ["CONDA_PREFIX"]}/etc/conda/activate.d/')
-                    os.makedirs('os.environ["CONDA_PREFIX"]}/etc/conda/deactivate.d/')
+                    os.makedirs(f'{os.environ["CONDA_PREFIX"]}/etc/conda/activate.d/')
+                    os.makedirs(f'{os.environ["CONDA_PREFIX"]}/etc/conda/deactivate.d/')
                     subprocess.Popen(f'echo "export {db_name}={os.environ[db_name]}" >> {os.environ["CONDA_PREFIX"]}/etc/conda/activate.d/cfphage_pipe.sh', shell=True).wait()
                     subprocess.Popen(f'echo "unset {db_name}" >> {os.environ["CONDA_PREFIX"]}/etc/conda/deactivate.d/cfphage_pipe.sh', shell=True).wait()
                 except KeyError:
