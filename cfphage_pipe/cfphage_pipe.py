@@ -47,15 +47,17 @@ def phelp():
         """
     )
 
+
 def str2bool(v):
     if isinstance(v, bool):
-        return(v)
+        return (v)
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return(True)
+        return (True)
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return(False)
+        return (False)
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 # def get_snakefile_path(name):
 #     thisdir = os.path.dirname(__file__)
@@ -69,6 +71,8 @@ def str2bool(v):
 """
 Load the reference package. This will fail if the directory doesn't exist.
 """
+
+
 def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix'):
     try:
         source_conda_env()
@@ -89,7 +93,8 @@ def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix
                 print(' ERROR '.center(100))
                 print('_' * 100 + '\n')
                 print(f"The '{db_name}' environment variable is not defined.".center(100) + '\n')
-                print('Please set this variable to your default server/home directory conda environment path.'.center(100))
+                print('Please set this variable to your default server/home directory conda environment path.'.center(
+                    100))
                 print(f'Alternatively, use {software_flag} flag.'.center(100))
                 print('=' * 100)
                 signal.alarm(120)
@@ -105,10 +110,13 @@ def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix
                         (db_name, os.environ[db_name]), shell=True).wait()
                 signal.alarm(0)
                 print('=' * 100)
-                print('Reactivate your cfphage_pipe conda environment or source ~/.bashrc to suppress this message.'.center(100))
+                print(
+                    'Reactivate your cfphage_pipe conda environment or source ~/.bashrc to suppress this message.'.center(
+                        100))
                 print('=' * 100)
 
                 return os.environ[db_name]
+
 
 def source_conda_env():
     try:
@@ -130,6 +138,7 @@ def source_conda_env():
         # File not found so going to have to create it
         pass
 
+
 def source_bashrc():
     try:
         with open('%s/.bashrc' % os.environ['HOME']) as f:
@@ -149,11 +158,12 @@ def source_bashrc():
     except FileNotFoundError:
         # File not found so going to have to create it
         pass
+
+
 ##########################################################################################
 
 
 def create_config(configfile, args):
-
     # Check databases
     if not os.path.exists(args.gtdbtk_db):
         print(f"Error: path to GTDB-Tk database {args.gtdbtk_db} does not exits")
@@ -175,7 +185,8 @@ def create_config(configfile, args):
         print(f"Error: path to VIBRANT database {args.vibrant_db} does not exits")
         sys.exit(1)
 
-def main(args):
+
+def main():
     ############################### Main parser ###############################
 
     main_parser = argparse.ArgumentParser(prog='cfphage_pipe',
@@ -268,6 +279,7 @@ def main(args):
         except TypeError:
             args.cmds = '--conda-create-envs-only '
 
+
 ############################### Classes ###############################
 class CustomHelpFormatter(argparse.HelpFormatter):
     def _split_lines(self, text, width):
@@ -277,9 +289,9 @@ class CustomHelpFormatter(argparse.HelpFormatter):
         h = action.help
         if '%(default)' not in action.help:
             if action.default != '' and \
-               action.default != [] and \
-               action.default != None \
-               and action.default != False:
+                    action.default != [] and \
+                    action.default != None \
+                    and action.default != False:
                 if action.default is not argparse.SUPPRESS:
                     defaulting_nargs = [argparse.OPTIONAL,
                                         argparse.ZERO_OR_MORE]
@@ -298,7 +310,5 @@ class CustomHelpFormatter(argparse.HelpFormatter):
         return ''.join([indent + line for line in text.splitlines(True)])
 
 
-
 if __name__ == '__main__':
-
     sys.exit(main())
