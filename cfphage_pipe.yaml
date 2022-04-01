@@ -1,4 +1,3 @@
-name: cfpage_pipe
 channels:
   - conda-forge
   - bioconda
