@@ -84,7 +84,7 @@ def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix
                 os.environ[db_name] = input(f'Input {db_name} now:')
                 try:
                     subprocess.Popen(
-                        'mkdir -p %s/etc/conda/activate.d/; mkdir -p %s/etc/conda/deactivate.d/; echo "export %s=%s" >> %s/etc/conda/activate.d/aviary.sh; echo "unset %s" >> %s/etc/conda/deactivate.d/aviary.sh; ' %
+                        'mkdir -p %s/etc/conda/activate.d/; mkdir -p %s/etc/conda/deactivate.d/; echo "export %s=%s" >> %s/etc/conda/activate.d/cfphage_pipe.sh; echo "unset %s" >> %s/etc/conda/deactivate.d/cfphage_pipe.sh; ' %
                         (os.environ['CONDA_PREFIX'], os.environ['CONDA_PREFIX'], db_name, os.environ[db_name],
                          os.environ['CONDA_PREFIX'], db_name, os.environ['CONDA_PREFIX']), shell=True).wait()
                 except KeyError:
@@ -93,14 +93,14 @@ def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix
                         (db_name, os.environ[db_name]), shell=True).wait()
                 signal.alarm(0)
                 print('=' * 100)
-                print('Reactivate your aviary conda environment or source ~/.bashrc to suppress this message.'.center(100))
+                print('Reactivate your cfphage_pipe conda environment or source ~/.bashrc to suppress this message.'.center(100))
                 print('=' * 100)
 
                 return os.environ[db_name]
 
 def source_conda_env():
     try:
-        with open(format('%s/etc/conda/activate.d/aviary.sh' % os.environ['CONDA_PREFIX'])) as f:
+        with open(format('%s/etc/conda/activate.d/cfpage_pipe.sh' % os.environ['CONDA_PREFIX'])) as f:
             for line in f:
                 if line.startswith('#') or not line.strip():
                     continue
