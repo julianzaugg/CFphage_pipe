@@ -22,7 +22,7 @@ def get_version(relpath):
 
 
 setup(
-    name='aviary',
+    name='cfphage_pipe',
     version=get_version("cfphage_pipe/__init__.py"),
     url='https://github.com/julianzaugg/CFphage_pipe',
     license='GPL-3.0',
@@ -31,9 +31,9 @@ setup(
     description='cfphage_pipe - pipeline to process Cystic Fibrosis isolates for phage discovery and evaluation',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=['aviary'],
+    packages=['cfphage_pipe'],
     package_data={'': [
-            "aviary/*",
+            "cfphage_pipe/*",
                        ]},
     data_files=[(".", ["README.md", "LICENSE"])],
     include_package_data=True,
