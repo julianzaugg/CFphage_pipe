@@ -35,6 +35,18 @@ from yaml import dump as yaml_dump
 from cfphage_pipe.__init__ import __version__
 
 
+def phelp():
+    print(
+        """
+                            ......:::::: CFPhage_pipe ::::::......
+        Pipeline for the processing of (Cystic Fibrosis) isolates for phage discovery and evaluation
+                assemble         - Assemble short, short + long, or just long reads for one or more isolates
+                predict_virus    - Predict viruses in provided contigs
+                annotate_isolate - Functionally annotate one or more isolates
+                annotate_virus   
+        """
+    )
+
 def str2bool(v):
     if isinstance(v, bool):
         return(v)
@@ -203,12 +215,58 @@ def main(args):
     )
 
     base_group.add_argument(
+        '--dry-run', '--dry_run', '--dryrun',
+        help='Perform snakemake dry run, tests workflow order and conda environments',
+        type=str2bool,
+        nargs='?',
+        const=True,
+        dest='dryrun',
+        default=False,
+    )
+
+    base_group.add_argument(
+        '--build',
+        help='Build conda environments and then exits. Equivalent to \"--snakemake-cmds \'--conda-create-envs-only True \' \"',
+        type=str2bool,
+        nargs='?',
+        const=True,
+        dest='build',
+    )
+
+    base_group.add_argument(
         '--conda-prefix', '--conda_prefix',
         help='Path to the location of installed conda environments, or where to install new environments',
         dest='conda_prefix',
         default=get_software_db_path('CONDA_ENV_PATH', '--conda-prefix'),
     )
 
+    base_group.add_argument(
+        '--snakemake-cmds',
+        help='Additional commands to supplied to snakemake in the form of a single string'
+             'e.g. "--print-compilation True". '
+             'NOTE: Most commands in snakemake -h are valid but some commands may clash with commands '
+             'cfphage directly supplies to snakemake. Please make'
+             "sure your additional commands don't clash.",
+        dest='cmds',
+        default='',
+    )
+
+    ############################### Parsing input ###############################
+
+    if (len(sys.argv) == 1 or sys.argv[1] == '-h' or sys.argv[1] == '--help'):
+        phelp()
+    else:
+        args = main_parser.parse_args()
+
+    prefix = args.output
+    if not os.path.exists(prefix):
+        os.makedirs(prefix)
+
+    if args.build:
+        try:
+            args.cmds = args.cmds + '--conda-create-envs-only '
+        except TypeError:
+            args.cmds = '--conda-create-envs-only '
 
 ############################### Classes ###############################
 class CustomHelpFormatter(argparse.HelpFormatter):
