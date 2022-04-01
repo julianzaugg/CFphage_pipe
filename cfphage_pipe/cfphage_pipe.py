@@ -68,12 +68,10 @@ def str2bool(v):
 ##########################################################################################
 # Functions to source the conda environment variables
 # Taken from https://github.com/rhysnewell/aviary/blob/93f7e342e2659562d8ae7a40816e46b47cea01e8/aviary/config/config.py
-"""
-Load the reference package. This will fail if the directory doesn't exist.
-"""
-
-
 def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix'):
+    """
+    Load the reference package. This will fail if the directory doesn't exist.
+    """
     try:
         source_conda_env()
         SW_PATH = os.environ[db_name]
@@ -158,6 +156,20 @@ def source_bashrc():
         pass
 
 
+def set_db_path(path, db_name='CONDA_ENV_PATH'):
+    """
+    Sets an environmental variable and appends it to the conda activation script
+    """
+    os.environ[db_name] = path
+    try:
+        os.makedirs(f'{os.environ["CONDA_PREFIX"]}/etc/conda/activate.d/')
+        os.makedirs(f'{os.environ["CONDA_PREFIX"]}/etc/conda/deactivate.d/')
+        subprocess.Popen(f'echo "export {db_name}={os.environ[db_name]}" >> {os.environ["CONDA_PREFIX"]}/etc/conda/activate.d/aviary.sh', shell=True).wait()
+        subprocess.Popen(f'echo "unset {db_name}" >> {os.environ["CONDA_PREFIX"]}/etc/conda/deactivate.d/aviary.sh', shell=True).wait()
+
+    except KeyError:
+        subprocess.Popen(f'echo "export {db_name}={os.environ[db_name]}" >> ~/.bashrc', shell=True).wait()
+
 ##########################################################################################
 
 
@@ -185,6 +197,13 @@ def create_config(configfile, args):
 
 
 def main():
+    # Source the conda environment variables in case users have previously set
+    # the variables but have not restarted the environment.
+    try:
+        source_conda_env()
+    except FileNotFoundError:
+        source_bashrc()
+
     ############################### Main parser ###############################
 
     main_parser = argparse.ArgumentParser(prog='cfphage_pipe',
@@ -251,7 +270,7 @@ def main():
 
     base_group.add_argument(
         '--snakemake-cmds',
-        help='Additional commands to supplied to snakemake in the form of a single string'
+        help='Additional commands to be supplied to snakemake in the form of a single string'
              'e.g. "--print-compilation True". '
              'NOTE: Most commands in snakemake -h are valid but some commands may clash with commands '
              'cfphage directly supplies to snakemake. Please make'
@@ -266,6 +285,9 @@ def main():
         phelp()
     else:
         args = main_parser.parse_args()
+
+        if args.conda_prefix is not None:
+            set_db_path(args.conda_prefix, db_name='CONDA_ENV_PATH')
 
         prefix = args.output
         if not os.path.exists(prefix):
