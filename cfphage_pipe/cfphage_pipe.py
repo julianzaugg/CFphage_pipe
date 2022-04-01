@@ -100,14 +100,12 @@ def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix
                 signal.alarm(120)
                 os.environ[db_name] = input(f'Input {db_name} now:')
                 try:
-                    subprocess.Popen(
-                        'mkdir -p %s/etc/conda/activate.d/; mkdir -p %s/etc/conda/deactivate.d/; echo "export %s=%s" >> %s/etc/conda/activate.d/cfphage_pipe.sh; echo "unset %s" >> %s/etc/conda/deactivate.d/cfphage_pipe.sh; ' %
-                        (os.environ['CONDA_PREFIX'], os.environ['CONDA_PREFIX'], db_name, os.environ[db_name],
-                         os.environ['CONDA_PREFIX'], db_name, os.environ['CONDA_PREFIX']), shell=True).wait()
+                    os.makedirs('os.environ["CONDA_PREFIX"]}/etc/conda/activate.d/')
+                    os.makedirs('os.environ["CONDA_PREFIX"]}/etc/conda/deactivate.d/')
+                    subprocess.Popen(f'echo "export {db_name}={os.environ[db_name]}" >> {os.environ["CONDA_PREFIX"]}/etc/conda/activate.d/cfphage_pipe.sh', shell=True).wait()
+                    subprocess.Popen(f'echo "unset {db_name}" >> {os.environ["CONDA_PREFIX"]}/etc/conda/deactivate.d/cfphage_pipe.sh', shell=True).wait()
                 except KeyError:
-                    subprocess.Popen(
-                        'echo "export %s=%s" >> ~/.bashrc' %
-                        (db_name, os.environ[db_name]), shell=True).wait()
+                    subprocess.Popen(f'echo "export {db_name}={os.environ[db_name]}" >> ~/.bashrc', shell=True).wait()
                 signal.alarm(0)
                 print('=' * 100)
                 print(
@@ -269,15 +267,15 @@ def main():
     else:
         args = main_parser.parse_args()
 
-    prefix = args.output
-    if not os.path.exists(prefix):
-        os.makedirs(prefix)
+        prefix = args.output
+        if not os.path.exists(prefix):
+            os.makedirs(prefix)
 
-    if args.build:
-        try:
-            args.cmds = args.cmds + '--conda-create-envs-only '
-        except TypeError:
-            args.cmds = '--conda-create-envs-only '
+        if args.build:
+            try:
+                args.cmds = args.cmds + '--conda-create-envs-only '
+            except TypeError:
+                args.cmds = '--conda-create-envs-only '
 
 
 ############################### Classes ###############################
