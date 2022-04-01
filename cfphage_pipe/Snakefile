@@ -1,3 +1,4 @@
+from snakemake import workflow
 from snakemake.utils import logger, min_version
 min_version("6.0")
 
@@ -14,7 +15,7 @@ sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(workflow.snakefile)),"scripts")
 )
 
-configfile: "config/config.yaml"
+configfile: "cfphage_pipe/config/template_config.yaml"
 
 # Get list of samples
 LONG_READ_DIR = config["LONG_READ_DIR"]

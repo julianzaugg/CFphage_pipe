@@ -159,10 +159,11 @@ def phelp():
         """
                             ......:::::: CFPhage_pipe ::::::......
         Pipeline for the processing of (Cystic Fibrosis) isolates for phage discovery and evaluation
-                assemble         - Assemble short, short + long, or just long reads for one or more isolates
-                predict_virus    - Predict viruses in provided contigs
-                annotate_isolate - Functionally annotate one or more isolates
-                annotate_virus   
+                assemble_isolate      - Assemble short, short + long, or just long reads for one or more isolates
+                (NA) assemble_virus   - Assemble short, short + long, or just long reads for one or more viruses
+                predict_virus         - Predict viruses in provided contigs
+                annotate_isolate      - Functionally annotate one or more isolates
+                annotate_virus        - Functionally annotate one or more viruses
         """
     )
 
@@ -183,10 +184,18 @@ def str2bool(v):
 #     snakefile = os.path.join(thisdir, "conf", name)
 #     return snakefile
 
-
-
+def get_snakefile(file="Snakefile"):
+    snakefile = os.path.join(os.path.dirname(os.path.abspath(__file__)), file)
+    if not os.path.exists(snakefile):
+        sys.exit(f"Unable to locate the Snakemake workflow file; tried {snakefile}")
+    return snakefile
 
 def create_config(configfile, args):
+    """Check args and populate config file from template
+    """
+
+    config = os.path.join(self.output, 'config.yaml')
+
     # Check databases
     if not os.path.exists(args.gtdbtk_db):
         print(f"Error: path to GTDB-Tk database {args.gtdbtk_db} does not exits")
@@ -217,6 +226,7 @@ def main():
     except FileNotFoundError:
         source_bashrc()
 
+    # Create parsers
     ############################### Main parser ###############################
 
     main_parser = argparse.ArgumentParser(prog='cfphage_pipe',
@@ -249,7 +259,7 @@ def main():
     )
 
     base_group.add_argument(
-        '-o', '--output',
+        '-o', '--output', '--output_directory',
         help='Output directory',
         dest='output',
         default='./',
@@ -266,6 +276,15 @@ def main():
     )
 
     base_group.add_argument(
+        '--conda-frontend', '--conda_frontend',
+        help='Which conda frontend to use, mamba is faster but harder to debug. Switch this to conda '
+             'If experiencing problems installing environments',
+        dest='conda_frontend',
+        default="mamba",
+        choices=["conda", "mamba"],
+    )
+
+    base_group.add_argument(
         '--build',
         help='Build conda environments and then exits. Equivalent to \"--snakemake-cmds \'--conda-create-envs-only True \' \"',
         type=str2bool,
@@ -274,6 +293,7 @@ def main():
         dest='build',
     )
 
+    # FIXME? change default to os.path.join(os.path.dirname(os.path.realpath(__file__)
     base_group.add_argument(
         '--conda-prefix', '--conda_prefix',
         help='Path to the location of installed conda environments, or where to install new environments',
@@ -291,6 +311,13 @@ def main():
         dest='cmds',
         default='',
     )
+
+    # ~#~#~#~#~#~#~#~#~#~#~#~#~   sub-parsers   ~#~#~#~#~#~#~#~#~#~#~#~#~#
+    ############################# Assemble ###############################
+
+    ############################# Predict ###############################
+
+    ############################# Annotate ###############################
 
     ############################### Parsing input ###############################
 
