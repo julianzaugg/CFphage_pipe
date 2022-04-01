@@ -34,40 +34,20 @@ from yaml import dump as yaml_dump
 
 from cfphage_pipe.__init__ import __version__
 
-
-def phelp():
-    print(
-        """
-                            ......:::::: CFPhage_pipe ::::::......
-        Pipeline for the processing of (Cystic Fibrosis) isolates for phage discovery and evaluation
-                assemble         - Assemble short, short + long, or just long reads for one or more isolates
-                predict_virus    - Predict viruses in provided contigs
-                annotate_isolate - Functionally annotate one or more isolates
-                annotate_virus   
-        """
-    )
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return (v)
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return (True)
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return (False)
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
-
-
-# def get_snakefile_path(name):
-#     thisdir = os.path.dirname(__file__)
-#     snakefile = os.path.join(thisdir, "conf", name)
-#     return snakefile
-
-
 ##########################################################################################
 # Functions to source the conda environment variables
 # Taken from https://github.com/rhysnewell/aviary/blob/93f7e342e2659562d8ae7a40816e46b47cea01e8/aviary/config/config.py
+
+
+def handler(signum, frame):
+    """
+    Function to handle signal IOErrors after missing input
+    """
+    raise IOError
+
+signal.signal(signal.SIGALRM, handler)
+
+
 def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix'):
     """
     Load the reference package. This will fail if the directory doesn't exist.
@@ -116,7 +96,7 @@ def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix
 
 def source_conda_env():
     try:
-        with open(format('%s/etc/conda/activate.d/cfpage_pipe.sh' % os.environ['CONDA_PREFIX'])) as f:
+        with open(format('%s/etc/conda/activate.d/cfphage_pipe.sh' % os.environ['CONDA_PREFIX'])) as f:
             for line in f:
                 if line.startswith('#') or not line.strip():
                     continue
@@ -171,6 +151,39 @@ def set_db_path(path, db_name='CONDA_ENV_PATH'):
         subprocess.Popen(f'echo "export {db_name}={os.environ[db_name]}" >> ~/.bashrc', shell=True).wait()
 
 ##########################################################################################
+
+
+
+def phelp():
+    print(
+        """
+                            ......:::::: CFPhage_pipe ::::::......
+        Pipeline for the processing of (Cystic Fibrosis) isolates for phage discovery and evaluation
+                assemble         - Assemble short, short + long, or just long reads for one or more isolates
+                predict_virus    - Predict viruses in provided contigs
+                annotate_isolate - Functionally annotate one or more isolates
+                annotate_virus   
+        """
+    )
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return (v)
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return (True)
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return (False)
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+# def get_snakefile_path(name):
+#     thisdir = os.path.dirname(__file__)
+#     snakefile = os.path.join(thisdir, "conf", name)
+#     return snakefile
+
+
 
 
 def create_config(configfile, args):
