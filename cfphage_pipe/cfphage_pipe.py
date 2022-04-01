@@ -1,4 +1,4 @@
-# cfphage_pipe.py - Info about cfphage_pipe.py
+#!/usr/bin/env python
 ###############################################################################
 #                                                                             #
 # This program is free software: you can redistribute it and/or modify        #
@@ -15,7 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                             #
 ###############################################################################
-
 __author__ = "Julian Zaugg"
 __copyright__ = "Copyright 2022"
 __credits__ = ["Julian Zaugg"]
@@ -26,9 +25,15 @@ __status__ = "Development"
 
 ###############################################################################
 import argparse
+import subprocess
 import os
+import sys
+import signal
+import pandas as pd
+from yaml import dump as yaml_dump
 
-import snakemake
+from cfphage_pipe.__init__ import __version__
+
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -40,17 +45,202 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def get_snakefile_path(name):
-    thisdir = os.path.dirname(__file__)
-    snakefile = os.path.join(thisdir, "conf", name)
-    return snakefile
+# def get_snakefile_path(name):
+#     thisdir = os.path.dirname(__file__)
+#     snakefile = os.path.join(thisdir, "conf", name)
+#     return snakefile
 
-# def main(args):
-    # snakefile=snakefile_path
+
+##########################################################################################
+# Functions to source the conda environment variables
+# Taken from https://github.com/rhysnewell/aviary/blob/93f7e342e2659562d8ae7a40816e46b47cea01e8/aviary/config/config.py
+"""
+Load the reference package. This will fail if the directory doesn't exist.
+"""
+def get_software_db_path(db_name='CONDA_ENV_PATH', software_flag='--conda-prefix'):
+    try:
+        source_conda_env()
+        SW_PATH = os.environ[db_name]
+        return SW_PATH
+    except KeyError:
+        try:
+            source_conda_env()
+            CONDA_PATH = os.environ[db_name]
+            return CONDA_PATH
+        except KeyError:
+            try:
+                source_bashrc()
+                CONDA_PATH = os.environ[db_name]
+                return CONDA_PATH
+            except KeyError:
+                print('\n' + '=' * 100)
+                print(' ERROR '.center(100))
+                print('_' * 100 + '\n')
+                print(f"The '{db_name}' environment variable is not defined.".center(100) + '\n')
+                print('Please set this variable to your default server/home directory conda environment path.'.center(100))
+                print(f'Alternatively, use {software_flag} flag.'.center(100))
+                print('=' * 100)
+                signal.alarm(120)
+                os.environ[db_name] = input(f'Input {db_name} now:')
+                try:
+                    subprocess.Popen(
+                        'mkdir -p %s/etc/conda/activate.d/; mkdir -p %s/etc/conda/deactivate.d/; echo "export %s=%s" >> %s/etc/conda/activate.d/aviary.sh; echo "unset %s" >> %s/etc/conda/deactivate.d/aviary.sh; ' %
+                        (os.environ['CONDA_PREFIX'], os.environ['CONDA_PREFIX'], db_name, os.environ[db_name],
+                         os.environ['CONDA_PREFIX'], db_name, os.environ['CONDA_PREFIX']), shell=True).wait()
+                except KeyError:
+                    subprocess.Popen(
+                        'echo "export %s=%s" >> ~/.bashrc' %
+                        (db_name, os.environ[db_name]), shell=True).wait()
+                signal.alarm(0)
+                print('=' * 100)
+                print('Reactivate your aviary conda environment or source ~/.bashrc to suppress this message.'.center(100))
+                print('=' * 100)
+
+                return os.environ[db_name]
+
+def source_conda_env():
+    try:
+        with open(format('%s/etc/conda/activate.d/aviary.sh' % os.environ['CONDA_PREFIX'])) as f:
+            for line in f:
+                if line.startswith('#') or not line.strip():
+                    continue
+                # if 'export' not in line:
+                #     continue
+                # Remove leading `export `, if you have those
+                # then, split name / value pair
+                # key, value = line.replace('export ', '', 1).strip().split('=', 1)
+                try:
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value  # Load to local environ
+                except ValueError:
+                    continue
+    except FileNotFoundError:
+        # File not found so going to have to create it
+        pass
+
+def source_bashrc():
+    try:
+        with open('%s/.bashrc' % os.environ['HOME']) as f:
+            for line in f:
+                if line.startswith('#') or not line.strip():
+                    continue
+                # if 'export' not in line:
+                #     continue
+                # Remove leading `export `, if you have those
+                # then, split name / value pair
+                # key, value = line.replace('export ', '', 1).strip().split('=', 1)
+                try:
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value  # Load to local environ
+                except ValueError:
+                    continue
+    except FileNotFoundError:
+        # File not found so going to have to create it
+        pass
+##########################################################################################
+
+
+def create_config(configfile, args):
+
+    # Check databases
+    if not os.path.exists(args.gtdbtk_db):
+        print(f"Error: path to GTDB-Tk database {args.gtdbtk_db} does not exits")
+        sys.exit(1)
+
+    if not os.path.exists(args.imgvr_diamond_db):
+        print(f"Error: path to IMGVR protein DIAMOND database {args.imgvr_db} does not exits")
+        sys.exit(1)
+
+    if not os.path.exists(args.amrfinderplus_db):
+        print(f"Error: path to AMRFinderPlus database {args.amrfinderplus_db} does not exits")
+        sys.exit(1)
+
+    if not os.path.exists(args.checkv_db):
+        print(f"Error: path to CheckV database {args.checkv_db} does not exits")
+        sys.exit(1)
+
+    if not os.path.exists(args.vibrant_db):
+        print(f"Error: path to VIBRANT database {args.vibrant_db} does not exits")
+        sys.exit(1)
+
+def main(args):
+    ############################### Main parser ###############################
+
+    main_parser = argparse.ArgumentParser(prog='cfphage_pipe',
+                                          formatter_class=CustomHelpFormatter,
+                                          add_help=False)
+    main_parser.add_argument('--version',
+                             action='version',
+                             version=__version__,
+                             help='Show version information.')
+
     # snakemake.snakemake(snakefile, configfiles=[args.configfile])
+    # parser=argparse.ArgumentParser(description="", usage="")
+    # parser.add_argument('-c', '--configfile', action='')
+    # args = parser.parse_args()
+    ############################## Command groups #############################
+    base_group = argparse.ArgumentParser(formatter_class=CustomHelpFormatter, add_help=False)
+
+    base_group.add_argument(
+        '-t', '--max-threads', '--max_threads',
+        help='Maximum number of threads given to any particular process',
+        dest='max_threads',
+        default=8,
+    )
+
+    base_group.add_argument(
+        '-m', '--max-memory', '--max_memory',
+        help='Maximum memory for available usage in Gigabytes',
+        dest='max_memory',
+        default=100,
+    )
+
+    base_group.add_argument(
+        '-o', '--output',
+        help='Output directory',
+        dest='output',
+        default='./',
+    )
+
+    base_group.add_argument(
+        '--conda-prefix', '--conda_prefix',
+        help='Path to the location of installed conda environments, or where to install new environments',
+        dest='conda_prefix',
+        default=get_software_db_path('CONDA_ENV_PATH', '--conda-prefix'),
+    )
+
+
+############################### Classes ###############################
+class CustomHelpFormatter(argparse.HelpFormatter):
+    def _split_lines(self, text, width):
+        return text.splitlines()
+
+    def _get_help_string(self, action):
+        h = action.help
+        if '%(default)' not in action.help:
+            if action.default != '' and \
+               action.default != [] and \
+               action.default != None \
+               and action.default != False:
+                if action.default is not argparse.SUPPRESS:
+                    defaulting_nargs = [argparse.OPTIONAL,
+                                        argparse.ZERO_OR_MORE]
+
+                    if action.option_strings or action.nargs in defaulting_nargs:
+
+                        if '\n' in h:
+                            lines = h.splitlines()
+                            lines[0] += ' (default: %(default)s)'
+                            h = '\n'.join(lines)
+                        else:
+                            h += ' (default: %(default)s)'
+        return h
+
+    def _fill_text(self, text, width, indent):
+        return ''.join([indent + line for line in text.splitlines(True)])
+
 
 
 if __name__ == '__main__':
-    parser=argparse.ArgumentParser(description="", usage="")
-    parser.add_argument('-c', '--configfile', action='')
-    args = parser.parse_argse()
+
+    sys.exit(main())

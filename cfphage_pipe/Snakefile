@@ -77,7 +77,7 @@ REFERENCE_GENOMES = [reference_genome.replace(f"{config['REFERENCE_GENOMES_DIR']
 ABSOLUTE_DATA_PATH = os.getcwd()
 SNAKE_PATH= workflow.basedir
 
-include: "rules/qc.smk"
+include: "rules/quality_control.smk"
 include: "rules/assemble.smk"
 include: "rules/assembly_annotate.smk"
 include: "rules/viral_assembly_predict.smk"
