@@ -49,7 +49,7 @@ rule assembly_abricate:
         "Running abricate on polished assemblies"
     shell:
         """
-        declare -a databases=("card" "vfdb")
+        declare -a databases=("card" "vfdb" "resfinder")
         ABRICATE_DIR="data/assembly_annotation/abricate/{wildcards.sample}/{wildcards.assembler}"
         mkdir -p $ABRICATE_DIR
         for db in "${{databases[@]}}";do
