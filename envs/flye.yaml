@@ -1,4 +1,4 @@
 channels:
   - bioconda
 dependencies:
-  - flye=2.8.3
+  - flye=2.9
